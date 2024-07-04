@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"net/url"
 	"os"
 	"path"
 	"time"
@@ -96,9 +95,8 @@ var Command = &cobra.Command{
 			}
 			res, err = dg.FromFile(ctx, args[0], options)
 		} else {
-			_, err = url.Parse(args[0])
-			if err != nil {
-				return fmt.Errorf("could not parse URL %s: %w", args[0], err)
+			if !client.IsURL(args[0]) {
+				return fmt.Errorf("could not parse URL %s", args[0])
 			}
 			res, err = dg.FromURL(ctx, args[0], options)
 		}
