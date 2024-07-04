@@ -24,6 +24,7 @@ func init() {
 	rootCmd.AddCommand(ytt.Command)
 	rootCmd.AddCommand(deepgram.Command)
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
+	rootCmd.SilenceUsage = true
 }
 
 func initConfig() {
