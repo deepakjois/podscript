@@ -4,6 +4,7 @@ go 1.22.4
 
 require (
 	github.com/charmbracelet/huh v0.4.2
+	github.com/deepgram/deepgram-go-sdk v1.3.6
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 )
@@ -18,8 +19,11 @@ require (
 	github.com/dlclark/regexp2 v1.11.0 // indirect
 	github.com/dop251/goja v0.0.0-20240220182346-e401ed450204 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/google/pprof v0.0.0-20240227163752-401108e1b7e7 // indirect
+	github.com/gorilla/schema v1.3.0 // indirect
+	k8s.io/klog/v2 v2.110.1 // indirect
 )
 
 require (
