@@ -21,10 +21,10 @@ import (
 
 func init() {
 	Command.Flags().String("path", "", "save transcripts and API responses to path")
-	Command.Flags().String("suffix", "", "append suffix to filenames")
-	Command.Flags().Bool("file", false, "transcribe local audio file. mutually exclusive with --url")
-	Command.Flags().Bool("url", false, "transcribe audio file located remotely. mutually exclusive with --file")
-	Command.MarkFlagsMutuallyExclusive("file", "url")
+	Command.Flags().String("suffix", "", "append suffix to filenames for easier recognition")
+	Command.Flags().Bool("from-file", false, "transcribe from local audio file (mutually exclusive with --from-url)")
+	Command.Flags().Bool("from-url", false, "transcribe from remote audio file (mutually exclusive with --from-file)")
+	Command.MarkFlagsMutuallyExclusive("from-file", "from-url")
 }
 
 var Command = &cobra.Command{
@@ -32,8 +32,8 @@ var Command = &cobra.Command{
 	Short: "Generate transcript of an audio file.",
 	Args:  cobra.ExactArgs(1),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		useFile, _ := cmd.Flags().GetBool("file")
-		useURL, _ := cmd.Flags().GetBool("url")
+		useFile, _ := cmd.Flags().GetBool("from-file")
+		useURL, _ := cmd.Flags().GetBool("from-url")
 
 		if !(useFile || useURL) {
 			return errors.New("one of --file or --url must be specified")
@@ -76,8 +76,8 @@ var Command = &cobra.Command{
 		c := client.New(apiKey, &interfaces.ClientOptions{})
 		dg := prerecorded.New(c)
 
-		useFile, _ := cmd.Flags().GetBool("file")
-		useURL, _ := cmd.Flags().GetBool("url")
+		useFile, _ := cmd.Flags().GetBool("from-file")
+		useURL, _ := cmd.Flags().GetBool("from-url")
 
 		if (useFile && useURL) || (!useFile && !useURL) {
 			// Should not happen
