@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path"
 	"strings"
 	"time"
 
@@ -71,7 +72,7 @@ func callChatGPTAPIWithBackoff(client *openai.Client, contextTxt, text string) (
 		return "", fmt.Errorf("no choices returned from API")
 	}
 
-	fmt.Printf("Usage: %v\n", resp.Usage)
+	fmt.Printf("Usage: %+v\n", resp.Usage)
 	return resp.Choices[0].Message.Content, nil
 }
 
@@ -111,6 +112,22 @@ var Command = &cobra.Command{
 			return errors.New("OpenAI API key not found. Please run 'podscript configure' or set the PODSCRIPT_OPENAI_API_KEY environment variable.")
 		}
 
+		folder, _ := cmd.Flags().GetString("path")
+		suffix, _ := cmd.Flags().GetString("suffix")
+		if folder != "" {
+			fi, err := os.Stat(folder)
+			if err != nil || !fi.IsDir() {
+				return fmt.Errorf("path not found: %s", folder)
+			}
+		}
+		timestamp := time.Now().Format("2006-01-02-150405")
+		var filenameSuffix string
+		if suffix == "" {
+			filenameSuffix = timestamp
+		} else {
+			filenameSuffix = fmt.Sprintf("%s_%s", timestamp, suffix)
+		}
+
 		// Extract Transcript
 		youtubeClient := youtube.Client{}
 
@@ -133,12 +150,12 @@ var Command = &cobra.Command{
 			transcriptTxt += tr.Text + "\n"
 		}
 
-		timestamp := time.Now().Format("2006-01-02-150405")
-		if err = os.WriteFile(fmt.Sprintf("raw_transcript_%s.txt", timestamp), []byte(transcriptTxt), 0644); err != nil {
+		rawTranscriptFilename := path.Join(folder, fmt.Sprintf("raw_transcript_%s.txt", filenameSuffix))
+		if err = os.WriteFile(rawTranscriptFilename, []byte(transcriptTxt), 0644); err != nil {
 			return fmt.Errorf("failed to write raw transcript: %w", err)
 		}
 
-		// // Chunk and Send to OpenAI
+		// Chunk and Send to OpenAI
 		chunks := chunkTranscript(transcriptTxt)
 		contextTxt := chunks[0]
 		openAPIclient := openai.NewClient(apiKey)
@@ -153,12 +170,12 @@ var Command = &cobra.Command{
 			cleanedTranscript.WriteString(cleanedChunk + " ")
 		}
 
-		// fmt.Println(cleanedTranscript.String())
-		// cleanedTranscript, err := callChatGPTAPI(openAPIclient, transcriptTxt)
 		if err != nil {
 			return fmt.Errorf("failed to process chunk: %w", err)
 		}
-		if err = os.WriteFile(fmt.Sprintf("cleaned_transcript_%s.txt", timestamp), []byte(cleanedTranscript.String()), 0644); err != nil {
+
+		cleanedTranscriptFilename := path.Join(folder, fmt.Sprintf("cleaned_transcript_%s.txt", filenameSuffix))
+		if err = os.WriteFile(cleanedTranscriptFilename, []byte(cleanedTranscript.String()), 0644); err != nil {
 			return fmt.Errorf("failed to write cleaned transcript: %w", err)
 		}
 		return nil
