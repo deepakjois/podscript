@@ -55,9 +55,12 @@ You can locate the audio file link for any podcast on [ListenNotes](https://www.
 
 Sample Output:
 ```
+podscript deepgram --from-url  https://audio.listennotes.com/e/p/d6cc86364eb540c1a30a1cac2b77b82c/
+wrote raw JSON API response to deepgram_api_response_2024-07-05-173538.json
+wrote transcript to deepgram_api_response_2024-07-05-173538.json
 ```
 
-Customise the path and add a recognizable suffix with `--path` and `--suffix` options.
+Alternatively, you can pass a local audio file to the command by setting `--from-file` instead of `--from-url`. You can also customise the path and add a recognizable suffix with `--path` and `--suffix` options.
 
 > [!TIP]
 > You can find the audio download link for a podcast on ListenNotes under the More menu
