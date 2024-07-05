@@ -16,7 +16,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "podscript",
 	Short: "podscript generates podcast audio transcripts",
-	Long: `A tool to generated transcripts for podcast audio files using LLM and
+	Long: `A tool to generate transcripts for podcast audio files using LLM and
 Speech-To-Text (STT) APIs.`,
 }
 
