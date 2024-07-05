@@ -115,6 +115,13 @@ var Command = &cobra.Command{
 		if err = os.WriteFile(jsonFilename, data, 0644); err != nil {
 			return fmt.Errorf("failed to write JSON response: %w", err)
 		}
+		fmt.Printf("wrote raw JSON API response to %s\n", jsonFilename)
+
+		transcriptFilename := path.Join(folder, fmt.Sprintf("deepgram_transcript_%s.txt", filenameSuffix))
+		if err = os.WriteFile(transcriptFilename, []byte(res.Results.Channels[0].Alternatives[0].Paragraphs.Transcript), 0644); err != nil {
+			return fmt.Errorf("failed to write transcript: %w", err)
+		}
+		fmt.Printf("wrote transcript to %s\n", jsonFilename)
 		return nil
 	},
 }
