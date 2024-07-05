@@ -19,23 +19,23 @@ import (
 )
 
 func init() {
-	Command.Flags().String("path", "", "save transcripts and API responses to path")
-	Command.Flags().String("suffix", "", "append suffix to filenames for easier recognition")
-	Command.Flags().Bool("from-file", false, "transcribe from local audio file (mutually exclusive with --from-url)")
-	Command.Flags().Bool("from-url", false, "transcribe from remote audio file (mutually exclusive with --from-file)")
+	Command.Flags().StringP("path", "p", "", "save transcripts and API responses to path")
+	Command.Flags().StringP("suffix", "s", "", "append suffix to filenames for easier recognition")
+	Command.Flags().BoolP("from-file", "f", false, "transcribe from local audio file (mutually exclusive with --from-url)")
+	Command.Flags().BoolP("from-url", "u", false, "transcribe from remote audio file (mutually exclusive with --from-file)")
 	Command.MarkFlagsMutuallyExclusive("from-file", "from-url")
 }
 
 var Command = &cobra.Command{
 	Use:   "deepgram <audio_file | audio_url>",
-	Short: "Generate transcript of an audio file.",
+	Short: "Generate transcript of an audio file using Deepgram API.",
 	Args:  cobra.ExactArgs(1),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		useFile, _ := cmd.Flags().GetBool("from-file")
 		useURL, _ := cmd.Flags().GetBool("from-url")
 
 		if !(useFile || useURL) {
-			return errors.New("one of --file or --url must be specified")
+			return errors.New("one of --from-file or --from-url must be specified")
 		}
 		return nil
 	},
@@ -80,7 +80,7 @@ var Command = &cobra.Command{
 
 		if (useFile && useURL) || (!useFile && !useURL) {
 			// Should not happen
-			return errors.New("only one of --file or --url must be specified")
+			return errors.New("only one of --from-file or --from-url must be specified")
 		}
 
 		var (
