@@ -105,8 +105,8 @@ var Command = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		apiKey := viper.GetString("openai_api_key")
-		if apiKey == "" {
-			return errors.New("OpenAI API key not found. Please run 'podscript configure' or set the PODSCRIPT_OPENAI_API_KEY environment variable.")
+		if apiKey == "" && !raw {
+			return errors.New("OpenAI API key not found. Please run 'podscript configure' or set the PODSCRIPT_OPENAI_API_KEY environment variable")
 		}
 
 		folder, _ := cmd.Flags().GetString("path")
