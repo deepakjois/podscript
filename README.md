@@ -10,7 +10,7 @@ You need an API key for at least one of the following services to use podscript:
 ## Install
 
 ```shell
-> go install github.com/deepakjois/podscript
+> go install github.com/deepakjois/podscript@latest
 
 > ~/go/bin/podscript --help
 ```
