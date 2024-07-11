@@ -107,8 +107,7 @@ var Command = &cobra.Command{
 
 		data, err := json.Marshal(res)
 		if err != nil {
-			fmt.Printf("json.Marshal failed. Err: %v\n", err)
-			os.Exit(1)
+			return fmt.Errorf("json.Marshal failed: %w", err)
 		}
 
 		jsonFilename := path.Join(folder, fmt.Sprintf("deepgram_api_response_%s.json", filenameSuffix))
@@ -121,7 +120,7 @@ var Command = &cobra.Command{
 		if err = os.WriteFile(transcriptFilename, []byte(res.Results.Channels[0].Alternatives[0].Paragraphs.Transcript), 0644); err != nil {
 			return fmt.Errorf("failed to write transcript: %w", err)
 		}
-		fmt.Printf("wrote transcript to %s\n", jsonFilename)
+		fmt.Printf("wrote transcript to %s\n", transcriptFilename)
 		return nil
 	},
 }
