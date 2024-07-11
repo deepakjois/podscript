@@ -8,6 +8,7 @@ import (
 
 	"github.com/deepakjois/podscript/cmd/configure"
 	"github.com/deepakjois/podscript/cmd/deepgram"
+	"github.com/deepakjois/podscript/cmd/groq"
 	"github.com/deepakjois/podscript/cmd/ytt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -26,6 +27,7 @@ func init() {
 	rootCmd.AddCommand(configure.Command)
 	rootCmd.AddCommand(ytt.Command)
 	rootCmd.AddCommand(deepgram.Command)
+	rootCmd.AddCommand(groq.Command)
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 	rootCmd.SilenceUsage = true
 }
