@@ -23,6 +23,8 @@ require (
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/google/pprof v0.0.0-20240227163752-401108e1b7e7 // indirect
 	github.com/gorilla/schema v1.3.0 // indirect
+	github.com/liushuangls/go-anthropic/v2 v2.4.0 // indirect
+	github.com/thediveo/enumflag/v2 v2.0.5 // indirect
 	k8s.io/klog/v2 v2.110.1 // indirect
 )
 
