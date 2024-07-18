@@ -21,9 +21,29 @@ import (
 )
 
 const (
-	userPrompt = "Your task is to clean up the following podcast transcription snippet and generate a clean version. Do not remove our modify anything. Output the most accurate transcription of the text"
+	userPrompt = `You will be given auto-generated captions from a YouTube video. These may be full captions, or a segment of the full transcript if it is too large. Your task is to transform these captions into a clean, readable transcript. Here are the auto-generated captions:
 
-	systemPrompt = "You are a top tier podcast transcriptionist skilled in grammer, spelling and punctuation. You specialize in taking rough transcripts and cleaning and formatting them with full accuracy. Use the following portion of the transcript from the beginning for more context. Only output the transcribed text"
+<captions>
+%s
+</captions>
+
+Follow these steps to create a clean transcript:
+
+1. Correct any spelling errors you encounter. Use your knowledge of common words and context to determine the correct spelling.
+
+2. Add appropriate punctuation throughout the text. This includes commas, periods, question marks, and exclamation points where necessary.
+
+3. Capitalize the first letter of each sentence and proper nouns.
+
+4. Break the text into logical paragraphs. Start a new paragraph when there's a shift in topic or speaker.
+
+5. Remove any unnecessary filler words, repetitions, or false starts.
+
+6. Maintain the original meaning and intent of the transcript. Do not remove any content even if it is unrelated to the main topic.
+
+
+Once you have completed these steps, provide the clean transcript within <transcript> tags. Ensure that the transcript is well-formatted, easy to read, 
+and accurately represents the original content of the video. Do not include any additional text in your response.`
 )
 
 type Model enumflag.Flag
@@ -46,12 +66,8 @@ func callChatGPTAPIWithBackoff(client *openai.Client, contextTxt, text string) (
 		Model: openai.GPT4o,
 		Messages: []openai.ChatCompletionMessage{
 			{
-				Role:    openai.ChatMessageRoleSystem,
-				Content: systemPrompt + "\n\n" + contextTxt,
-			},
-			{
 				Role:    openai.ChatMessageRoleUser,
-				Content: userPrompt + "\n\n" + text,
+				Content: fmt.Sprintf(userPrompt, text),
 			},
 		},
 	}
@@ -94,10 +110,9 @@ func callChatGPTAPIWithBackoff(client *openai.Client, contextTxt, text string) (
 
 func callClaudeAPIWithBackoff(client *anthropic.Client, contextTxt, text string) (string, error) {
 	req := &anthropic.MessagesRequest{
-		Model:  anthropic.ModelClaude3Dot5Sonnet20240620,
-		System: systemPrompt + "\n\n" + contextTxt,
+		Model: anthropic.ModelClaude3Dot5Sonnet20240620,
 		Messages: []anthropic.Message{
-			anthropic.NewUserTextMessage(userPrompt + "\n\n" + text),
+			anthropic.NewUserTextMessage(fmt.Sprintf(userPrompt, text)),
 		},
 		MaxTokens: 8192,
 	}
@@ -226,7 +241,7 @@ var Command = &cobra.Command{
 		if model == "chatgpt" {
 			maxWordsPerChunk = 3000
 		} else if model == "claude" {
-			maxWordsPerChunk = 5000
+			maxWordsPerChunk = 6000
 		}
 		// Chunk and Send to OpenAI
 		chunks := chunkTranscript(transcriptTxt, maxWordsPerChunk)
