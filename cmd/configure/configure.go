@@ -41,6 +41,11 @@ var Command = &cobra.Command{
 			return err
 		}
 
+		// Anthropic
+		if err := setViperKeyFromPrompt("Anthropic API key", "anthropic_api_key"); err != nil {
+			return err
+		}
+
 		// Deepgram
 		if err := setViperKeyFromPrompt("Deepgram API key", "deepgram_api_key"); err != nil {
 			return err

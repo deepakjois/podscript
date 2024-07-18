@@ -13,13 +13,32 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/kkdai/youtube/v2"
+	"github.com/liushuangls/go-anthropic/v2"
 	"github.com/sashabaranov/go-openai"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/thediveo/enumflag/v2"
 )
 
-const prompt = "Clean up the following podcast transcription snippet and generate a clean version. Do not remove anything and stay as close as possible to the original text. Only include the cleaned up transcript."
-const maxWordsPerChunk = 3000
+const (
+	userPrompt = "Your task is to clean up the following podcast transcription snippet and generate a clean version. Do not remove our modify anything. Output the most accurate transcription of the text"
+
+	systemPrompt = "You are a top tier podcast transcriptionist skilled in grammer, spelling and punctuation. You specialize in taking rough transcripts and cleaning and formatting them with full accuracy. Use the following portion of the transcript from the beginning for more context. Only output the transcribed text"
+)
+
+type Model enumflag.Flag
+
+// Enumeration of allowed ColorMode values.
+const (
+	ModelChatGPT Model = iota
+	ModelClaude
+)
+
+// Defines the textual representations for the ColorMode values.
+var modelMap = map[Model][]string{
+	Model(ModelChatGPT): {"chatgpt"},
+	Model(ModelClaude):  {"claude"},
+}
 
 func callChatGPTAPIWithBackoff(client *openai.Client, contextTxt, text string) (string, error) {
 
@@ -28,11 +47,11 @@ func callChatGPTAPIWithBackoff(client *openai.Client, contextTxt, text string) (
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleSystem,
-				Content: "You are a top tier podcast transcriptionist skilled in grammer, spelling and punctuation. You specialize in taking rough transcripts and cleaning and formatting them with full accuracy. Use the following transcript from the beginning for context\n\n" + contextTxt,
+				Content: systemPrompt + "\n\n" + contextTxt,
 			},
 			{
 				Role:    openai.ChatMessageRoleUser,
-				Content: prompt + "\n\n" + text,
+				Content: userPrompt + "\n\n" + text,
 			},
 		},
 	}
@@ -73,7 +92,48 @@ func callChatGPTAPIWithBackoff(client *openai.Client, contextTxt, text string) (
 	return resp.Choices[0].Message.Content, nil
 }
 
-func chunkTranscript(transcript string) []string {
+func callClaudeAPIWithBackoff(client *anthropic.Client, contextTxt, text string) (string, error) {
+	req := &anthropic.MessagesRequest{
+		Model:  anthropic.ModelClaude3Dot5Sonnet20240620,
+		System: systemPrompt + "\n\n" + contextTxt,
+		Messages: []anthropic.Message{
+			anthropic.NewUserTextMessage(userPrompt + "\n\n" + text),
+		},
+		MaxTokens: 8192,
+	}
+
+	backOff := backoff.NewExponentialBackOff()
+	backOff.MaxElapsedTime = 10 * time.Minute
+
+	var resp anthropic.MessagesResponse
+
+	err := backoff.Retry(func() (err error) {
+		resp, err = client.CreateMessages(context.Background(), *req)
+		if err != nil {
+			var anthropicAPIError *anthropic.APIError
+			if errors.As(err, &anthropicAPIError) {
+				if anthropicAPIError.IsRateLimitErr() || anthropicAPIError.IsOverloadedErr() {
+					fmt.Printf("%v\n", err)
+					fmt.Println("Retrying…")
+					return err
+				}
+			}
+			// For any other error, we'll stop retrying
+			return backoff.Permanent(err)
+		}
+		return nil
+	}, backOff)
+
+	if err != nil {
+		return "", err
+	}
+
+	// TODO: Log this as debug output
+	fmt.Printf("Usage: %+v\n", resp.Usage)
+	return resp.GetFirstContentText(), nil
+}
+
+func chunkTranscript(transcript string, maxWordsPerChunk int) []string {
 	// Split the transcript into chunks
 	var chunks []string
 	scanner := bufio.NewScanner(strings.NewReader(transcript))
@@ -105,9 +165,16 @@ var Command = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		raw, _ := cmd.Flags().GetBool("raw")
-		apiKey := viper.GetString("openai_api_key")
-		if apiKey == "" && !raw {
+		model := cmd.Flags().Lookup("model").Value.String()
+
+		openaiApiKey := viper.GetString("openai_api_key")
+		if model == "chatgpt" && openaiApiKey == "" && !raw {
 			return errors.New("OpenAI API key not found. Please run 'podscript configure' or set the PODSCRIPT_OPENAI_API_KEY environment variable")
+		}
+
+		anthropicApiKey := viper.GetString("anthropic_api_key")
+		if model == "claude" && anthropicApiKey == "" && !raw {
+			return errors.New("Anthropic API key not found. Please run 'podscript configure' or set the PODSCRIPT_ANTHROPIC_API_KEY environment variable")
 		}
 
 		folder, _ := cmd.Flags().GetString("path")
@@ -154,16 +221,42 @@ var Command = &cobra.Command{
 		if raw {
 			return nil
 		}
-		// Chunk and Send to OpenAI
-		chunks := chunkTranscript(transcriptTxt)
 
+		var maxWordsPerChunk int
+		if model == "chatgpt" {
+			maxWordsPerChunk = 3000
+		} else if model == "claude" {
+			maxWordsPerChunk = 5000
+		}
+		// Chunk and Send to OpenAI
+		chunks := chunkTranscript(transcriptTxt, maxWordsPerChunk)
 		// First chunk used as context
-		contextTxt := chunks[0]
-		openAPIclient := openai.NewClient(apiKey)
+		contextTxt := chunks[0][:3000]
+
+		var (
+			openAPIClient   *openai.Client
+			claudeAPIClient *anthropic.Client
+		)
+
+		if model == "chatgpt" {
+			openAPIClient = openai.NewClient(openaiApiKey)
+		} else {
+			claudeAPIClient = anthropic.NewClient(
+				anthropicApiKey,
+				anthropic.WithBetaVersion(anthropic.BetaMaxTokens35Sonnet20240715))
+		}
+		caller := func(contextTxt, chunk string) (string, error) {
+			if model == "chatgpt" {
+				return callChatGPTAPIWithBackoff(openAPIClient, contextTxt, chunk)
+			} else if model == "claude" {
+				return callClaudeAPIWithBackoff(claudeAPIClient, contextTxt, chunk)
+			}
+			panic("should never get here")
+		}
 
 		var cleanedTranscript strings.Builder
 		for i, chunk := range chunks {
-			cleanedChunk, err := callChatGPTAPIWithBackoff(openAPIclient, contextTxt, chunk)
+			cleanedChunk, err := caller(contextTxt, chunk)
 			if err != nil {
 				return fmt.Errorf("failed to process chunk: %w", err)
 			}
@@ -188,4 +281,5 @@ func init() {
 	Command.Flags().StringP("path", "p", "", "save raw and cleaned up transcripts to path")
 	Command.Flags().StringP("suffix", "s", "", "append suffix to filenames")
 	Command.Flags().BoolP("raw", "r", false, "download raw transcript, don't cleanup using LLM")
+	Command.Flags().VarP(enumflag.New(new(Model), "model", modelMap, enumflag.EnumCaseInsensitive), "model", "m", "use specified model: can be 'chatgpt' (default if omitted) or 'claude'")
 }
