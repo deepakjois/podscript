@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 	"time"
 
@@ -46,6 +47,16 @@ Once you have completed these steps, provide the clean transcript within <transc
 and accurately represents the original content of the video. Do not include any additional text in your response.`
 )
 
+var transcriptRegex = regexp.MustCompile(`(?s)<transcript>(.*?)</transcript>`)
+
+func extractTranscript(input string) string {
+	match := transcriptRegex.FindStringSubmatch(input)
+	if len(match) > 1 {
+		return strings.TrimSpace(match[1])
+	}
+	return ""
+}
+
 type Model enumflag.Flag
 
 // Enumeration of allowed ColorMode values.
@@ -60,7 +71,7 @@ var modelMap = map[Model][]string{
 	Model(ModelClaude):  {"claude"},
 }
 
-func callChatGPTAPIWithBackoff(client *openai.Client, contextTxt, text string) (string, error) {
+func callChatGPTAPIWithBackoff(client *openai.Client, text string) (string, error) {
 
 	req := openai.ChatCompletionRequest{
 		Model: openai.GPT4o,
@@ -108,7 +119,7 @@ func callChatGPTAPIWithBackoff(client *openai.Client, contextTxt, text string) (
 	return resp.Choices[0].Message.Content, nil
 }
 
-func callClaudeAPIWithBackoff(client *anthropic.Client, contextTxt, text string) (string, error) {
+func callClaudeAPIWithBackoff(client *anthropic.Client, text string) (string, error) {
 	req := &anthropic.MessagesRequest{
 		Model: anthropic.ModelClaude3Dot5Sonnet20240620,
 		Messages: []anthropic.Message{
@@ -246,7 +257,6 @@ var Command = &cobra.Command{
 		// Chunk and Send to OpenAI
 		chunks := chunkTranscript(transcriptTxt, maxWordsPerChunk)
 		// First chunk used as context
-		contextTxt := chunks[0][:3000]
 
 		var (
 			openAPIClient   *openai.Client
@@ -260,22 +270,23 @@ var Command = &cobra.Command{
 				anthropicApiKey,
 				anthropic.WithBetaVersion(anthropic.BetaMaxTokens35Sonnet20240715))
 		}
-		caller := func(contextTxt, chunk string) (string, error) {
+		caller := func(chunk string) (string, error) {
 			if model == "chatgpt" {
-				return callChatGPTAPIWithBackoff(openAPIClient, contextTxt, chunk)
+				return callChatGPTAPIWithBackoff(openAPIClient, chunk)
 			} else if model == "claude" {
-				return callClaudeAPIWithBackoff(claudeAPIClient, contextTxt, chunk)
+				return callClaudeAPIWithBackoff(claudeAPIClient, chunk)
 			}
 			panic("should never get here")
 		}
 
 		var cleanedTranscript strings.Builder
 		for i, chunk := range chunks {
-			cleanedChunk, err := caller(contextTxt, chunk)
+			cleanedChunk, err := caller(chunk)
 			if err != nil {
 				return fmt.Errorf("failed to process chunk: %w", err)
 			}
-			cleanedTranscript.WriteString(cleanedChunk + " ")
+			cleanedChunk = extractTranscript(cleanedChunk)
+			cleanedTranscript.WriteString(cleanedChunk)
 			fmt.Printf("transcribed part %d/%d…\n", i+1, len(chunks))
 		}
 
