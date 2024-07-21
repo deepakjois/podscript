@@ -114,7 +114,8 @@ var Command = &cobra.Command{
 			tc    TranscriptCleaner
 		)
 		if !raw {
-			model = Model(cmd.Flags().Lookup("model").Value.String())
+			m, _ := cmd.Flags().GetString("model")
+			model = Model(m)
 			switch model {
 			case ChatGPT4o, ChatGpt4oMini:
 				openaiApiKey := viper.GetString("openai_api_key")
