@@ -5,6 +5,8 @@ go 1.22.4
 require (
 	github.com/charmbracelet/huh v0.4.2
 	github.com/deepgram/deepgram-go-sdk v1.3.6
+	github.com/liushuangls/go-anthropic/v2 v2.4.0
+	github.com/sashabaranov/go-openai v1.27.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 )
@@ -23,8 +25,6 @@ require (
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/google/pprof v0.0.0-20240227163752-401108e1b7e7 // indirect
 	github.com/gorilla/schema v1.3.0 // indirect
-	github.com/liushuangls/go-anthropic/v2 v2.4.0 // indirect
-	github.com/thediveo/enumflag/v2 v2.0.5 // indirect
 	k8s.io/klog/v2 v2.110.1 // indirect
 )
 
@@ -54,7 +54,6 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
-	github.com/sashabaranov/go-openai v1.26.2
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
