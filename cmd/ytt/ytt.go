@@ -56,12 +56,6 @@ func calcWordsFromTokens(tokens int) int {
 	return int((float64(tokens)*0.75)/1000) * 1000
 }
 
-var maxWordsPerChunk map[Model]int = map[Model]int{
-	ChatGPT4o:                 calcWordsFromTokens(maxTokens[ChatGPT4o]),
-	ChatGpt4oMini:             calcWordsFromTokens(maxTokens[ChatGpt4oMini]),
-	Claude3Dot5Sonnet20240620: calcWordsFromTokens(maxTokens[Claude3Dot5Sonnet20240620]),
-}
-
 func chunkTranscript(transcript string, maxWordsPerChunk int) []string {
 	// Split the transcript into chunks
 	var chunks []string
@@ -182,7 +176,7 @@ var Command = &cobra.Command{
 		}
 
 		// Chunk and Send to LLM API
-		chunks := chunkTranscript(transcriptTxt, maxWordsPerChunk[model])
+		chunks := chunkTranscript(transcriptTxt, calcWordsFromTokens(maxTokens[model]))
 
 		var cleanedTranscript strings.Builder
 		for i, chunk := range chunks {
