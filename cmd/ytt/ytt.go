@@ -103,33 +103,6 @@ var Command = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		raw, _ := cmd.Flags().GetBool("raw")
 
-		var (
-			model Model
-			tc    TranscriptCleaner
-		)
-		if !raw {
-			m, _ := cmd.Flags().GetString("model")
-			model = Model(m)
-			switch model {
-			case ChatGPT4o, ChatGpt4oMini:
-				openaiApiKey := viper.GetString("openai_api_key")
-				if openaiApiKey == "" {
-					return errors.New("OpenAI API key not found. Please run 'podscript configure' or set the PODSCRIPT_OPENAI_API_KEY environment variable")
-				}
-				tc = NewOpenAITranscriptCleaner(openaiApiKey, model)
-
-			case Claude3Dot5Sonnet20240620:
-				anthropicApiKey := viper.GetString("anthropic_api_key")
-				if anthropicApiKey == "" {
-					return errors.New("Anthropic API key not found. Please run 'podscript configure' or set the PODSCRIPT_ANTHROPIC_API_KEY environment variable")
-				}
-				tc = NewAnthropicTranscriptCleaner(anthropicApiKey)
-			default:
-				// Should never get here
-				panic(fmt.Sprintf("Cannot initialise API client from model %s", model))
-			}
-		}
-
 		folder, _ := cmd.Flags().GetString("path")
 		suffix, _ := cmd.Flags().GetString("suffix")
 		if folder != "" {
@@ -173,6 +146,32 @@ var Command = &cobra.Command{
 		// Stop if only raw transcript required
 		if raw {
 			return nil
+		}
+
+		// Initialize API client
+		var (
+			model Model
+			tc    TranscriptCleaner
+		)
+		m, _ := cmd.Flags().GetString("model")
+		model = Model(m)
+		switch model {
+		case ChatGPT4o, ChatGpt4oMini:
+			openaiApiKey := viper.GetString("openai_api_key")
+			if openaiApiKey == "" {
+				return errors.New("OpenAI API key not found. Please run 'podscript configure' or set the PODSCRIPT_OPENAI_API_KEY environment variable")
+			}
+			tc = NewOpenAITranscriptCleaner(openaiApiKey, model)
+
+		case Claude3Dot5Sonnet20240620:
+			anthropicApiKey := viper.GetString("anthropic_api_key")
+			if anthropicApiKey == "" {
+				return errors.New("Anthropic API key not found. Please run 'podscript configure' or set the PODSCRIPT_ANTHROPIC_API_KEY environment variable")
+			}
+			tc = NewAnthropicTranscriptCleaner(anthropicApiKey)
+		default:
+			// Should never get here
+			panic(fmt.Sprintf("Cannot initialise API client from model %s", model))
 		}
 
 		// Chunk and Send to LLM API
