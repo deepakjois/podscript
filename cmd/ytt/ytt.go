@@ -1,8 +1,7 @@
 package ytt
 
 import (
-	"bufio"
-	"errors"
+	"context"
 	"fmt"
 	"os"
 	"path"
@@ -12,7 +11,7 @@ import (
 
 	"github.com/kkdai/youtube/v2"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"github.com/tmc/langchaingo/llms"
 )
 
 const (
@@ -51,35 +50,41 @@ func extractTranscript(input string) string {
 	return ""
 }
 
-func calcWordsFromTokens(tokens int) int {
-	// round down to nearest 1000
-	return int((float64(tokens)*0.75)/1000) * 1000
+type transcriptCleaner struct {
+	modelOpt Model
+	model    llms.Model
 }
 
-func chunkTranscript(transcript string, maxWordsPerChunk int) []string {
-	// Split the transcript into chunks
-	var chunks []string
-	scanner := bufio.NewScanner(strings.NewReader(transcript))
-	scanner.Split(bufio.ScanWords)
+func newTranscriptCleaner(model Model) (*transcriptCleaner, error) {
+	llm, err := getModel(model)
+	if err != nil {
+		return nil, err
+	}
+	return &transcriptCleaner{modelOpt: model, model: llm}, nil
+}
 
-	var chunkBuilder strings.Builder
-	wordCount := 0
+func (tc transcriptCleaner) cleanupTranscript(transcript string) (string, error) {
+	chunks, err := splitText(transcript, tc.modelOpt)
 
-	for scanner.Scan() {
-		word := scanner.Text()
-		chunkBuilder.WriteString(word + " ")
-		wordCount++
-		if wordCount >= maxWordsPerChunk {
-			chunks = append(chunks, chunkBuilder.String())
-			chunkBuilder.Reset()
-			wordCount = 0
+	if err != nil {
+		return "", fmt.Errorf("error splitting text: %w", err)
+	}
+
+	var cleanedTranscript strings.Builder
+	for i, chunk := range chunks {
+		cleanedChunk, err := llms.GenerateFromSinglePrompt(
+			context.Background(),
+			tc.model, userPrompt+"\n\n"+chunk,
+			llms.WithMaxTokens(maxTokens[tc.modelOpt]),
+		)
+		if err != nil {
+			return "", fmt.Errorf("failed to process chunk: %w", err)
 		}
+		cleanedChunk = extractTranscript(cleanedChunk)
+		cleanedTranscript.WriteString(cleanedChunk)
+		fmt.Printf("transcribed part %d/%d…\n", i+1, len(chunks))
 	}
-	if chunkBuilder.Len() > 0 {
-		chunks = append(chunks, chunkBuilder.String())
-	}
-	return chunks
-
+	return cleanedTranscript.String(), nil
 }
 
 var Command = &cobra.Command{
@@ -149,47 +154,20 @@ var Command = &cobra.Command{
 		}
 
 		// Initialize API client
-		var (
-			model Model
-			tc    TranscriptCleaner
-		)
 		m, _ := cmd.Flags().GetString("model")
-		model = Model(m)
-		switch model {
-		case ChatGPT4o, ChatGpt4oMini:
-			openaiApiKey := viper.GetString("openai_api_key")
-			if openaiApiKey == "" {
-				return errors.New("OpenAI API key not found. Please run 'podscript configure' or set the PODSCRIPT_OPENAI_API_KEY environment variable")
-			}
-			tc = NewOpenAITranscriptCleaner(openaiApiKey, model)
-
-		case Claude3Dot5Sonnet20240620:
-			anthropicApiKey := viper.GetString("anthropic_api_key")
-			if anthropicApiKey == "" {
-				return errors.New("Anthropic API key not found. Please run 'podscript configure' or set the PODSCRIPT_ANTHROPIC_API_KEY environment variable")
-			}
-			tc = NewAnthropicTranscriptCleaner(anthropicApiKey)
-		default:
-			// Should never get here
-			panic(fmt.Sprintf("Cannot initialise API client from model %s", model))
+		model := Model(m)
+		tc, err := newTranscriptCleaner(model)
+		if err != nil {
+			return fmt.Errorf("failed to initialize model %s: %v", model, err)
 		}
 
-		// Chunk and Send to LLM API
-		chunks := chunkTranscript(transcriptTxt, calcWordsFromTokens(maxTokens[model]))
-
-		var cleanedTranscript strings.Builder
-		for i, chunk := range chunks {
-			cleanedChunk, err := tc.CleanupTranscript(chunk)
-			if err != nil {
-				return fmt.Errorf("failed to process chunk: %w", err)
-			}
-			cleanedChunk = extractTranscript(cleanedChunk)
-			cleanedTranscript.WriteString(cleanedChunk)
-			fmt.Printf("transcribed part %d/%d…\n", i+1, len(chunks))
+		cleanedTranscriptTxt, err := tc.cleanupTranscript(transcriptTxt)
+		if err != nil {
+			return fmt.Errorf("failed to transcribe: %w", err)
 		}
 
 		cleanedTranscriptFilename := path.Join(folder, fmt.Sprintf("cleaned_transcript_%s.txt", filenameSuffix))
-		if err = os.WriteFile(cleanedTranscriptFilename, []byte(cleanedTranscript.String()), 0644); err != nil {
+		if err = os.WriteFile(cleanedTranscriptFilename, []byte(cleanedTranscriptTxt), 0644); err != nil {
 			return fmt.Errorf("failed to write cleaned transcript: %w", err)
 		}
 		fmt.Printf("wrote cleaned up transcripts to %s\n", cleanedTranscriptFilename)
