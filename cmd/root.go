@@ -21,6 +21,12 @@ var rootCmd = &cobra.Command{
 Speech-To-Text (STT) APIs.`,
 }
 
+var supportedLLMKeys = []string{
+	"openai_api_key",
+	"anthropic_api_key",
+	"groq_api_key",
+}
+
 func init() {
 	cobra.OnInitialize(initConfig)
 
@@ -39,8 +45,10 @@ func initConfig() {
 	viper.SetConfigType("toml")
 	viper.SetConfigFile(path.Join(homeDir, ".podscript.toml"))
 
-	viper.SetEnvPrefix("PODSCRIPT")
-	viper.AutomaticEnv()
+	// Bind env values to keys
+	for _, k := range supportedLLMKeys {
+		viper.BindEnv(k)
+	}
 
 	// Read in config file and ENV variables if set
 	if err := viper.ReadInConfig(); err != nil {

@@ -5,10 +5,9 @@ go 1.22.4
 require (
 	github.com/charmbracelet/huh v0.4.2
 	github.com/deepgram/deepgram-go-sdk v1.3.6
-	github.com/liushuangls/go-anthropic/v2 v2.4.0
-	github.com/sashabaranov/go-openai v1.27.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
+	github.com/tmc/langchaingo v0.1.13-0.20240725041451-1975058648b5
 )
 
 require (
@@ -24,14 +23,20 @@ require (
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/google/pprof v0.0.0-20240227163752-401108e1b7e7 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/schema v1.3.0 // indirect
+	github.com/pkoukk/tiktoken-go v0.1.6 // indirect
+	gitlab.com/golang-commonmark/html v0.0.0-20191124015941-a22733972181 // indirect
+	gitlab.com/golang-commonmark/linkify v0.0.0-20191026162114-a0c2df6c8f82 // indirect
+	gitlab.com/golang-commonmark/markdown v0.0.0-20211110145824-bf3e522c626a // indirect
+	gitlab.com/golang-commonmark/mdurl v0.0.0-20191124015652-932350d1cb84 // indirect
+	gitlab.com/golang-commonmark/puny v0.0.0-20191124015043-9f83538fa04f // indirect
 	k8s.io/klog/v2 v2.110.1 // indirect
 )
 
 require (
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
-	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/charmbracelet/x/ansi v0.1.2 // indirect
 	github.com/charmbracelet/x/input v0.1.1 // indirect
 	github.com/charmbracelet/x/term v0.1.1 // indirect
