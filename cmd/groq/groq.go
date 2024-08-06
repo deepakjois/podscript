@@ -112,7 +112,7 @@ var Command = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		apiKey := viper.GetString("groq_api_key")
 		if apiKey == "" {
-			return errors.New("Groq API key not found. Please run 'podscript configure' or set the PODSCRIPT_GROQ_API_KEY environment variable")
+			return errors.New("Groq API key not found. Please run 'podscript configure' or set the GROQ_API_KEY environment variable")
 		}
 
 		folder, _ := cmd.Flags().GetString("path")

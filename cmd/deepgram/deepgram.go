@@ -42,7 +42,7 @@ var Command = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		apiKey := viper.GetString("deepgram_api_key")
 		if apiKey == "" {
-			return errors.New("Deepgram API key not found. Please run 'podscript configure' or set the PODSCRIPT_DEEPGRAM_API_KEY environment variable.")
+			return errors.New("Deepgram API key not found. Please run 'podscript configure' or set the DEEPGRAM_API_KEY environment variable.")
 		}
 
 		folder, _ := cmd.Flags().GetString("path")
