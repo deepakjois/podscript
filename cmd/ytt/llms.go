@@ -18,13 +18,16 @@ const (
 	ChatGPT4o                 Model = "gpt-4o"
 	ChatGpt4oMini             Model = "gpt-4o-mini"
 	Claude3Dot5Sonnet20240620 Model = "claude-3-5-sonnet-20240620"
+	GroqLlama3170B            Model = "llama-3.1-70b-versatile"
 )
 
 var (
 	maxTokens map[Model]int = map[Model]int{
 		ChatGPT4o:                 4096,
 		ChatGpt4oMini:             10000,
-		Claude3Dot5Sonnet20240620: 8192}
+		Claude3Dot5Sonnet20240620: 8192,
+		GroqLlama3170B:            8192,
+	}
 )
 
 func getModel(model Model) (llms.Model, error) {
@@ -41,6 +44,16 @@ func getModel(model Model) (llms.Model, error) {
 			return nil, errors.New("Anthropic API key not found. Please run 'podscript configure' or set the ANTHROPIC_API_KEY environment variable")
 		}
 		return anthropic.New(anthropic.WithToken(anthropicApiKey), anthropic.WithModel(string(model)), anthropic.WithAnthropicBetaHeader(anthropic.MaxTokensAnthropicSonnet35))
+	case GroqLlama3170B:
+		groqApiKey := viper.GetString("groq_api_key")
+		if groqApiKey == "" {
+			return nil, errors.New("Groq API key not found. Please run 'podscript configure' or set the GROQ_API_KEY environment variable")
+		}
+		return openai.New(
+			openai.WithToken(groqApiKey),
+			openai.WithModel(string(model)),
+			openai.WithBaseURL("https://api.groq.com/openai/v1"),
+		)
 	default:
 		panic(fmt.Sprintf("Invalid model %s. Should not get here!", model))
 	}

@@ -36,7 +36,7 @@ Follow these steps to create a clean transcript:
 6. Maintain the original meaning and intent of the transcript. Do not remove any content even if it is unrelated to the main topic.
 
 
-Once you have completed these steps, provide the clean transcript within <transcript> tags. Ensure that the transcript is well-formatted, easy to read, 
+Once you have completed these steps, provide the clean transcript within <transcript> and </transcript> tags. Ensure that the transcript is well-formatted, easy to read, 
 and accurately represents the original content of the video. Do not include any additional text in your response.`
 )
 
@@ -80,6 +80,7 @@ func (tc transcriptCleaner) cleanupTranscript(transcript string) (string, error)
 		if err != nil {
 			return "", fmt.Errorf("failed to process chunk: %w", err)
 		}
+		fmt.Println(cleanedChunk)
 		cleanedChunk = extractTranscript(cleanedChunk)
 		cleanedTranscript.WriteString(cleanedChunk)
 		fmt.Printf("transcribed part %d/%d…\n", i+1, len(chunks))
@@ -99,7 +100,7 @@ var Command = &cobra.Command{
 
 		model, _ := cmd.Flags().GetString("model")
 		switch model {
-		case string(ChatGPT4o), string(ChatGpt4oMini), string(Claude3Dot5Sonnet20240620):
+		case string(ChatGPT4o), string(ChatGpt4oMini), string(Claude3Dot5Sonnet20240620), string(GroqLlama3170B):
 			return nil
 		default:
 			return fmt.Errorf("invalid model: must be one of %s, %s or %s", ChatGpt4oMini, ChatGPT4o, Claude3Dot5Sonnet20240620)
@@ -179,7 +180,7 @@ func init() {
 	Command.Flags().StringP("path", "p", "", "save raw and cleaned up transcripts to path")
 	Command.Flags().StringP("suffix", "s", "", "append suffix to filenames")
 	Command.Flags().BoolP("raw", "r", false, "download raw transcript, don't cleanup using LLM")
-	Command.Flags().StringP("model", "m", string(ChatGpt4oMini), fmt.Sprintf("use model - one of %s (default if ommitted), %s or %s", ChatGpt4oMini, ChatGPT4o, Claude3Dot5Sonnet20240620))
+	Command.Flags().StringP("model", "m", string(ChatGpt4oMini), fmt.Sprintf("use model - one of %s (default if ommitted), %s, %s or %s", ChatGpt4oMini, ChatGPT4o, Claude3Dot5Sonnet20240620, GroqLlama3170B))
 	Command.MarkFlagsMutuallyExclusive("raw", "model")
 
 }
