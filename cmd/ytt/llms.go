@@ -26,7 +26,7 @@ var (
 		ChatGPT4o:                 4096,
 		ChatGpt4oMini:             10000,
 		Claude3Dot5Sonnet20240620: 8192,
-		GroqLlama3170B:            8192,
+		GroqLlama3170B:            8000,
 	}
 )
 
