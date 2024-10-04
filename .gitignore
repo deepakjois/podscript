@@ -22,3 +22,6 @@ go.work
 go.work.sum
 podscript
 scratch.go
+
+#VS Code Settings
+.vscode

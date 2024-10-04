@@ -56,6 +56,11 @@ var Command = &cobra.Command{
 			return err
 		}
 
+		// Assembly AI
+		if err := setViperKeyFromPrompt("AssemblyAI API key", "assemblyai_api_key"); err != nil {
+			return err
+		}
+
 		err := viper.WriteConfigAs(viper.ConfigFileUsed())
 		if err != nil {
 			return fmt.Errorf("error writing config: %v", err)
