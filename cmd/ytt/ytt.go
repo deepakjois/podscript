@@ -80,7 +80,6 @@ func (tc transcriptCleaner) cleanupTranscript(transcript string) (string, error)
 		if err != nil {
 			return "", fmt.Errorf("failed to process chunk: %w", err)
 		}
-		fmt.Println(cleanedChunk)
 		cleanedChunk = extractTranscript(cleanedChunk)
 		cleanedTranscript.WriteString(cleanedChunk)
 		fmt.Printf("transcribed part %d/%d…\n", i+1, len(chunks))
