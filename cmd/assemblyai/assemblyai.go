@@ -117,8 +117,20 @@ var Command = &cobra.Command{
 
 		transcriptFilename := path.Join(folder, fmt.Sprintf("assemblyai_transcript_%s.txt", filenameSuffix))
 		transcriptFilename = filepath.Clean(transcriptFilename)
-		if err = os.WriteFile(transcriptFilename, []byte(*transcript.Text), 0644); err != nil {
-			return fmt.Errorf("failed to write transcript to file: %w", err)
+		file, err := os.Create(transcriptFilename)
+		if err != nil {
+			return fmt.Errorf("failed to create transcript file: %w", err)
+		}
+		defer file.Close()
+
+		for _, utterance := range transcript.Utterances {
+			_, err := fmt.Fprintf(file, "Speaker %s: %s\n\n",
+				aai.ToString(utterance.Speaker),
+				aai.ToString(utterance.Text),
+			)
+			if err != nil {
+				return fmt.Errorf("failed to write utterance to file: %w", err)
+			}
 		}
 		fmt.Printf("Wrote transcript to %s\n", transcriptFilename)
 
