@@ -10,6 +10,7 @@ import (
 	"github.com/deepakjois/podscript/cmd/deepgram"
 	"github.com/deepakjois/podscript/cmd/groq"
 	"github.com/deepakjois/podscript/cmd/ytt"
+	"github.com/deepakjois/podscript/cmd/assemblyai"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -25,6 +26,7 @@ var supportedLLMKeys = []string{
 	"openai_api_key",
 	"anthropic_api_key",
 	"groq_api_key",
+	"assemblyai_api_key",
 }
 
 func init() {
@@ -34,6 +36,7 @@ func init() {
 	rootCmd.AddCommand(ytt.Command)
 	rootCmd.AddCommand(deepgram.Command)
 	rootCmd.AddCommand(groq.Command)
+	rootCmd.AddCommand(assemblyai.Command)
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 	rootCmd.SilenceUsage = true
 }
