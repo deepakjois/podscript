@@ -103,13 +103,12 @@ Use the `--verbose` flag to dump timestamps for audio segments in the raw JSON r
 Use the `assemblyai` subcommand to generate transcripts using the `best` model from [Assembly AI's API endpoint](https://www.assemblyai.com/docs) (which as of Oct 2024 free to use within your credit limits and they provide $50 credits free on signup).
 
 ```shell
-> podscript assemblyai huberman.mp3
+> podscript assemblyai --from-url https://audio.listennotes.com/e/p/d6cc86364eb540c1a30a1cac2b77b82c/
 ```
 
 Sample Output:
 
 ```text
-Generated a transcript text from file podscript/input/1499_Learning_through_Listening.mp3
 Wrote transcript to assemblyai_api_transcript_2024-10-04-191551.txt
 ```
 
