@@ -106,7 +106,6 @@ var Command = &cobra.Command{
 				return fmt.Errorf("failed to transcribe from file: %w", err)
 			}
 			transcript = &transcriptValue
-			fmt.Printf("Generated transcript from file %s\n", audioFilePath)
 		} else {
 			return errors.New("please provide either a valid URL or a file path")
 		}
