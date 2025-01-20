@@ -73,7 +73,7 @@ All the subcommands support the `-o` flag to write the output to a text file. Ot
 #### AssemblyAI
 
 ```shell
-> podscript assemblyai --from-url https://audio.listennotes.com/e/p/d6cc86364eb540c1a30a1cac2b77b82c/ -o transcript.txt
+> podscript assembly-ai --from-url https://audio.listennotes.com/e/p/d6cc86364eb540c1a30a1cac2b77b82c/ -o transcript.txt
 ```
 
 ## Feedback
