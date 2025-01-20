@@ -47,7 +47,7 @@ podscript supports the following STT APIs:
 - [Assembly AI](https://www.assemblyai.com/docs) (which as of Oct 2024 is free to use within your credit limits and they provide $50 credits free on signup).
 
 > [!TIP]
-> You can find the audio download link for a podcast on ListenNotes under the More menu
+> You can find the audio download link for a podcast on [ListenNotes](https://www.listennotes.com/) under the More menu
 >
 > <img width="252" alt="image" src="https://github.com/deepakjois/podscript/assets/5342/1f400964-e575-4f59-9de0-ee75f386b27d">
 
