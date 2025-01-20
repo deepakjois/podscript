@@ -9,7 +9,7 @@ import (
 )
 
 type GroqCmd struct {
-	File   string `arg:"" help:"Audio file to transcribe" short:"f"`
+	File   string `arg:"" help:"Audio file to transcribe"`
 	Output string `help:"Path to output transcript file (default: stdout)" short:"o"`
 	APIKey string `env:"GROQ_API_KEY" default:"" hidden:""`
 }
