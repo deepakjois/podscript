@@ -4,25 +4,21 @@
 #
 # For the frontend app, we proxy to the Vite dev server running on port 5173.
 #
-# To run the web server, use the following command:
+# To run the web server, do the following:
 #
-# caddy run
+# - npm run dev in the frontend directory
+# - podscript web --dev in the backend directory
+# - caddy run
 #
-# Make sure to run `podscript we --dev` in a separate terminal to start the backend server.
-
+# Then you can access the web server at http://localhost:8080
 :8080 {
-	handle /settings* {
-		reverse_proxy localhost:5170
-	}
-	handle /models* {
-		reverse_proxy localhost:5170
+	# Define a path matcher for the backend API routes
+	@paths {
+		path_regexp ^/(settings|models.*|audio|ytt)$
 	}
 
-	handle /audio {
-		reverse_proxy localhost:5170
-	}
-
-	handle /ytt {
+	# Handle all backend API routes - proxy to Go backend server
+	handle @paths {
 		reverse_proxy localhost:5170
 	}
 
