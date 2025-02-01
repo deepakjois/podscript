@@ -3,21 +3,26 @@ module github.com/deepakjois/podscript
 go 1.22.4
 
 require (
-	github.com/AssemblyAI/assemblyai-go-sdk v1.8.1
+	github.com/AssemblyAI/assemblyai-go-sdk v1.10.0
 	github.com/alecthomas/kong v1.6.1
 	github.com/anthropics/anthropic-sdk-go v0.2.0-alpha.8
 	github.com/charmbracelet/huh v0.4.2
 	github.com/deepakjois/groq v0.0.0-20250118174530-0262c383bbb6
 	github.com/deepakjois/ytt v0.0.0-20240922124700-664221d83d24
-	github.com/deepgram/deepgram-go-sdk v1.3.6
+	github.com/deepgram/deepgram-go-sdk v1.6.2
 	github.com/openai/openai-go v0.1.0-alpha.46
 	github.com/pelletier/go-toml v1.9.5
 )
 
 require (
+	github.com/coder/websocket v1.8.12 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
+	github.com/dvonthenen/websocket v1.5.1-dyv.2 // indirect
+	github.com/fatih/color v1.17.0 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
+	github.com/hokaccha/go-prettyjson v0.0.0-20211117102719-0474bc63780f // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/tidwall/gjson v1.14.4 // indirect

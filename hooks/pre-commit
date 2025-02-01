@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Check if there are changes in web/frontend
+if git diff --cached --quiet web/frontend/; then
+    exit 0
+fi
+
+echo "Frontend changes detected. Building and copying dist..."
+
+# Store current dir
+CURRENT_DIR=$(pwd)
+
+# Navigate to frontend dir
+cd web/frontend || exit 1
+
+# Run build
+npm run build || { echo "Build failed"; exit 1; }
+
+# Go back and copy dist files
+cd "$CURRENT_DIR" || exit 1
+
+# Create dist dir if it doesn't exist
+mkdir -p dist
+
+# Remove any previous contents
+rm -rf dist/*
+
+# Copy contents
+cp -r web/frontend/dist/* dist/
+
+# Stage the new dist files
+git add dist/
+
+exit 0 

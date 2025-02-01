@@ -8,10 +8,10 @@ import (
 	"io/fs"
 	"os"
 
-	prerecorded "github.com/deepgram/deepgram-go-sdk/pkg/api/prerecorded/v1"
-	api "github.com/deepgram/deepgram-go-sdk/pkg/api/prerecorded/v1/interfaces"
+	api "github.com/deepgram/deepgram-go-sdk/pkg/api/listen/v1/rest"
+	interfacesv1 "github.com/deepgram/deepgram-go-sdk/pkg/api/listen/v1/rest/interfaces"
 	interfaces "github.com/deepgram/deepgram-go-sdk/pkg/client/interfaces"
-	client "github.com/deepgram/deepgram-go-sdk/pkg/client/prerecorded"
+	client "github.com/deepgram/deepgram-go-sdk/pkg/client/listen"
 )
 
 type DeepgramCmd struct {
@@ -43,11 +43,11 @@ func (d *DeepgramCmd) Run() error {
 		Utterances:  true,
 	}
 
-	c := client.New(d.APIKey, &interfaces.ClientOptions{})
-	dg := prerecorded.New(c)
+	c := client.NewREST(d.APIKey, &interfaces.ClientOptions{})
+	dg := api.New(c)
 
 	var (
-		res *api.PreRecordedResponse
+		res *interfacesv1.PreRecordedResponse
 		err error
 	)
 
@@ -59,9 +59,7 @@ func (d *DeepgramCmd) Run() error {
 		}
 		res, err = dg.FromFile(ctx, d.FromFile, options)
 	} else {
-		if !client.IsURL(d.FromURL) {
-			return fmt.Errorf("invalid URL: %s", d.FromURL)
-		}
+		// TODO check if URL is valid
 		res, err = dg.FromURL(ctx, d.FromURL, options)
 	}
 

@@ -11,33 +11,24 @@ import (
 )
 
 type Config struct {
-	AssemblyAIAPIKey string `toml:"assembly-ai-api-key"`
-	DeepgramAPIKey   string `toml:"deepgram-api-key"`
-	GroqAPIKey       string `toml:"groq-api-key"`
-	AnthropicAPIKey  string `toml:"anthropic-api-key"`
-	OpenAIAPIKey     string `toml:"openai-api-key"`
+	AssemblyAIAPIKey string `toml:"assembly-ai-api-key" json:"assembly_ai_api_key"`
+	DeepgramAPIKey   string `toml:"deepgram-api-key" json:"deepgram_api_key"`
+	GroqAPIKey       string `toml:"groq-api-key" json:"groq_api_key"`
+	AnthropicAPIKey  string `toml:"anthropic-api-key" json:"anthropic_api_key"`
+	OpenAIAPIKey     string `toml:"openai-api-key" json:"openai_api_key"`
 }
 
 type ConfigureCmd struct{}
 
-func (c *ConfigureCmd) Run() error {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return fmt.Errorf("error getting home directory: %w", err)
-	}
+const configFileName = ".podscript.toml"
 
-	configPath := path.Join(homeDir, ".podscript.toml")
+func (c *ConfigureCmd) Run() error {
 	config := &Config{}
 
-	// Read existing config if it exists
-	if _, err := os.Stat(configPath); err == nil {
-		data, err := os.ReadFile(configPath)
-		if err != nil {
-			return fmt.Errorf("error reading config file: %w", err)
-		}
-		if err := toml.Unmarshal(data, config); err != nil {
-			return fmt.Errorf("error parsing config file: %w", err)
-		}
+	// Try to read existing config
+	existingConfig, err := ReadConfig()
+	if err == nil {
+		config = existingConfig
 	}
 
 	// Prompt for each API key
@@ -58,18 +49,7 @@ func (c *ConfigureCmd) Run() error {
 		}
 	}
 
-	// Write config back to file
-	data, err := toml.Marshal(config)
-	if err != nil {
-		return fmt.Errorf("error marshaling config: %w", err)
-	}
-
-	if err := os.WriteFile(configPath, data, 0600); err != nil {
-		return fmt.Errorf("error writing config: %w", err)
-	}
-
-	fmt.Printf("Wrote to %s\n", configPath)
-	return nil
+	return WriteConfig(config)
 }
 
 func promptAndSet(promptTitle string, currentValue *string) error {
@@ -94,4 +74,41 @@ func promptAndSet(promptTitle string, currentValue *string) error {
 		fmt.Printf("skipping %s\n", promptTitle)
 	}
 	return nil
+}
+
+func ReadConfig() (*Config, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return nil, fmt.Errorf("error getting home directory: %w", err)
+	}
+
+	configPath := path.Join(homeDir, configFileName)
+	config := &Config{}
+
+	data, err := os.ReadFile(configPath)
+	if !os.IsNotExist(err) { // ignore if file doesn't exist
+		if err != nil {
+			return nil, fmt.Errorf("error reading config file: %w", err)
+		}
+
+		if err := toml.Unmarshal(data, config); err != nil {
+			return nil, fmt.Errorf("error parsing config file: %w", err)
+		}
+	}
+	return config, nil
+}
+
+func WriteConfig(config *Config) error {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("error getting home directory: %w", err)
+	}
+
+	configPath := path.Join(homeDir, configFileName)
+	data, err := toml.Marshal(config)
+	if err != nil {
+		return fmt.Errorf("error marshaling config: %w", err)
+	}
+
+	return os.WriteFile(configPath, data, 0600)
 }

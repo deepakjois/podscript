@@ -1,0 +1,22 @@
+:8080 {
+	# Handle /settings and /models routes - proxy to Go backend
+	handle /settings* {
+		reverse_proxy localhost:5170
+	}
+	handle /models* {
+		reverse_proxy localhost:5170
+	}
+
+	handle /audio {
+		reverse_proxy localhost:5170
+	}
+
+	handle /ytt {
+		reverse_proxy localhost:5170
+	}
+
+	# Handle all other routes - proxy to Vite dev server
+	handle {
+		reverse_proxy localhost:5173
+	}
+}

@@ -13,6 +13,7 @@ var cli struct {
 	Deepgram   DeepgramCmd   `cmd:"" help:"Transcribe audio using Deepgram API"`
 	AssemblyAI AssemblyAICmd `cmd:"" help:"Transcribe audio using AssemblyAI"`
 	Groq       GroqCmd       `cmd:"" help:"Transcribe audio using Groq's Whisper API"`
+	Web        WebCmd        `cmd:"" help:"Run web based UI server locally"`
 }
 
 func main() {
