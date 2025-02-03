@@ -1,6 +1,6 @@
 # podscript
 
-podscript is a tool to generate transcripts for podcasts (and other similar audio files), using LLMs and other Speech-to-Text (STT) APIs.
+podscript is a tool to generate transcripts for podcasts (and other similar audio files), using LLMs and Speech-to-Text (STT) APIs.
 
 ## Install
 
