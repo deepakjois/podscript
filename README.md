@@ -56,6 +56,8 @@ The `ytt` subommand uses the `gpt-4o` model by default. Use `--model` flag to se
 - `claude-3-5-haiku-20241022`
 - `llama-3.3-70b-versatile`
 - `llama-3.1-8b-instant`
+- `anthropic.claude-3-5-sonnet-20241022-v2:0`
+- `anthropic.claude-3-5-haiku-20241022-v1:0`
 
 ### Transcript from audio URLs and files
 > [!TIP]
@@ -68,6 +70,31 @@ podscript supports the following Speech-To-Text (STT) APIs:
 - [Deepgram](https://playground.deepgram.com/?endpoint=listen&smart_format=true&language=en&model=nova-2) (which as of Jan 2025 provides $200 free signup credit!)
 - [Assembly AI](https://www.assemblyai.com/docs) (which as of Oct 2024 is free to use within your credit limits and they provide $50 credits free on signup).
 - [Groq](https://console.groq.com/docs/speech-text) (which as of Jul 2024 is in beta and free to use within your rate limits).
+
+## Development
+
+Want to contribute? Here's how to build and run the project locally:
+
+### Backend
+
+Build the backend server:
+```bash
+go build -o podscript
+```
+
+Run it (for example, to start the web server):
+```bash
+./podscript web
+```
+
+### Frontend
+
+After making changes to the frontend code, you need to rebuild it:
+```bash
+cd web/frontend && npm run build
+```
+
+This will update the root `dist` folder with the latest frontend assets. You will need to restart the web server again
 
 ## Feedback
 
