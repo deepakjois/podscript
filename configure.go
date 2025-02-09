@@ -16,6 +16,7 @@ type Config struct {
 	GroqAPIKey       string `toml:"groq-api-key" json:"groq_api_key"`
 	AnthropicAPIKey  string `toml:"anthropic-api-key" json:"anthropic_api_key"`
 	OpenAIAPIKey     string `toml:"openai-api-key" json:"openai_api_key"`
+	GeminiAPIKey     string `toml:"gemini-api-key" json:"gemini_api_key"`
 }
 
 type ConfigureCmd struct{}
@@ -41,6 +42,7 @@ func (c *ConfigureCmd) Run() error {
 		{"Deepgram API key", &config.DeepgramAPIKey},
 		{"Groq API key", &config.GroqAPIKey},
 		{"AssemblyAI API key", &config.AssemblyAIAPIKey},
+		{"Gemini API key", &config.GeminiAPIKey},
 	}
 
 	for _, p := range prompts {

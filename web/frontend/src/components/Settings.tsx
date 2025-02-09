@@ -7,6 +7,7 @@ interface ApiKeys {
   assembly_ai_api_key: string
   deepgram_api_key: string
   groq_api_key: string
+  gemini_api_key: string
 }
 
 const API_KEY_LABELS: Record<keyof ApiKeys, string> = {
@@ -15,6 +16,7 @@ const API_KEY_LABELS: Record<keyof ApiKeys, string> = {
   assembly_ai_api_key: 'AssemblyAI API Key',
   deepgram_api_key: 'Deepgram API Key',
   groq_api_key: 'Groq API Key',
+  gemini_api_key: 'Gemini API Key',
 }
 
 export default function Settings({ onClose }: { onClose: () => void }) {

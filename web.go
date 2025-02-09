@@ -35,6 +35,7 @@ var modelConfigs = map[string]struct {
 			string(Claude35Haiku),
 			string(Llama3370b),
 			string(Llama318b),
+			string(Gemini2Flash),
 		},
 		Default: string(GPT4o),
 	},
