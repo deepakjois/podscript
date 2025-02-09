@@ -7,6 +7,10 @@ interface ApiKeys {
   assembly_ai_api_key: string
   deepgram_api_key: string
   groq_api_key: string
+  aws_region: string
+  aws_access_key_id: string
+  aws_secret_access_key: string
+  aws_session_token: string
 }
 
 const API_KEY_LABELS: Record<keyof ApiKeys, string> = {
@@ -15,6 +19,10 @@ const API_KEY_LABELS: Record<keyof ApiKeys, string> = {
   assembly_ai_api_key: 'AssemblyAI API Key',
   deepgram_api_key: 'Deepgram API Key',
   groq_api_key: 'Groq API Key',
+  aws_region: 'AWS Region',
+  aws_access_key_id: 'AWS Access Key ID',
+  aws_secret_access_key: 'AWS Secret Access Key',
+  aws_session_token: 'AWS Session Token'
 }
 
 export default function Settings({ onClose }: { onClose: () => void }) {
@@ -35,7 +43,7 @@ export default function Settings({ onClose }: { onClose: () => void }) {
       .catch(() => setError('Failed to load settings'))
   }, [])
 
-  const handleSave = async () => {
+  const handleSave = async (): Promise<void> => {
     setError('')
     setIsSaving(true)
     try {
@@ -70,11 +78,18 @@ export default function Settings({ onClose }: { onClose: () => void }) {
               <input
                 type={showFields[key] ? 'text' : 'password'}
                 value={keys[key]}
-                onChange={e => setKeys(prev => ({ ...prev, [key]: e.target.value }))}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setKeys(prev => ({ ...prev, [key]: e.target.value }))
+                }
                 className="w-full rounded-lg border px-4 py-2 pr-10"
               />
               <button
-                onClick={() => setShowFields(prev => ({ ...prev, [key]: !prev[key] }))}
+                onClick={() =>
+                  setShowFields((prev: Record<keyof ApiKeys, boolean>) => ({
+                    ...prev,
+                    [key]: !prev[key],
+                  }))
+                }
                 className="absolute top-1/2 right-2 -translate-y-1/2"
               >
                 {showFields[key] ? <EyeOff size={20} /> : <Eye size={20} />}

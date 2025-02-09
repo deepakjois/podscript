@@ -17,32 +17,44 @@ type YTTCmd struct {
 
 func (cmd *YTTCmd) getLLMClient() (LLMClient, error) {
 	var provider LLMProvider
-	var apiKey string
+
+	config := &Config{
+		OpenAIAPIKey:    cmd.OpenAIAPIKey,
+		AnthropicAPIKey: cmd.AnthropicAPIKey,
+		GroqAPIKey:      cmd.GroqAPIKey,
+	}
 
 	switch cmd.Model {
 	case GPT4o, GPT4oMini:
-		if cmd.OpenAIAPIKey == "" {
+		if config.OpenAIAPIKey == "" {
 			return nil, fmt.Errorf("OpenAI API key required for model %s", cmd.Model)
 		}
 		provider = OpenAI
-		apiKey = cmd.OpenAIAPIKey
 	case Claude35Sonnet, Claude35Haiku:
-		if cmd.AnthropicAPIKey == "" {
+		if config.AnthropicAPIKey == "" {
 			return nil, fmt.Errorf("Anthropic API key required for model %s", cmd.Model)
 		}
 		provider = Claude
-		apiKey = cmd.AnthropicAPIKey
 	case Llama3370b, Llama318b:
-		if cmd.GroqAPIKey == "" {
+		if config.GroqAPIKey == "" {
 			return nil, fmt.Errorf("Groq API key required for model %s", cmd.Model)
 		}
 		provider = Groq
-		apiKey = cmd.GroqAPIKey
+	case BedrockClaude35Sonnet, BedrockClaude35Haiku:
+		existingConfig, err := ReadConfig()
+		if err != nil {
+			return nil, fmt.Errorf("failed to read config: %w", err)
+		}
+		if existingConfig.AWSRegion == "" || existingConfig.AWSAccessKeyID == "" || existingConfig.AWSSecretAccessKey == "" {
+			return nil, fmt.Errorf("AWS credentials required for model %s. Run 'podscript configure' to set them up", cmd.Model)
+		}
+		provider = Bedrock
+		config = existingConfig
 	default:
 		return nil, fmt.Errorf("unsupported model: %s", cmd.Model)
 	}
 
-	return NewLLMClient(provider, apiKey)
+	return NewLLMClient(provider, config)
 }
 
 func (cmd *YTTCmd) Run() error {

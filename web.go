@@ -35,6 +35,8 @@ var modelConfigs = map[string]struct {
 			string(Claude35Haiku),
 			string(Llama3370b),
 			string(Llama318b),
+			string(BedrockClaude35Sonnet),
+			string(BedrockClaude35Haiku),
 		},
 		Default: string(GPT4o),
 	},
@@ -67,7 +69,6 @@ func (c *WebCmd) Run() error {
 		}
 		mux.Handle("/", http.FileServer(http.FS(dist)))
 	}
-
 	fmt.Printf("Starting server on port %d\n", c.Port)
 	return http.ListenAndServe(fmt.Sprintf(":%d", c.Port), mux)
 }
