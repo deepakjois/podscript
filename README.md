@@ -57,6 +57,8 @@ The `ytt` subommand uses the `gpt-4o` model by default. Use `--model` flag to se
 - `llama-3.3-70b-versatile`
 - `llama-3.1-8b-instant`
 - `gemini-2.0-flash`
+- `anthropic.claude-3-5-sonnet-20241022-v2:0`
+- `anthropic.claude-3-5-haiku-20241022-v1:0`
 
 ### Transcript from audio URLs and files
 > [!TIP]
@@ -69,6 +71,41 @@ podscript supports the following Speech-To-Text (STT) APIs:
 - [Deepgram](https://playground.deepgram.com/?endpoint=listen&smart_format=true&language=en&model=nova-2) (which as of Jan 2025 provides $200 free signup credit!)
 - [Assembly AI](https://www.assemblyai.com/docs) (which as of Oct 2024 is free to use within your credit limits and they provide $50 credits free on signup).
 - [Groq](https://console.groq.com/docs/speech-text) (which as of Jul 2024 is in beta and free to use within your rate limits).
+
+## Development
+
+Want to contribute? Here's how to build and run the project locally:
+
+### Prerequisites
+- Install `npm`: https://docs.npmjs.com/downloading-and-installing-node-js-and-npm?ref=meilisearch-blog
+- Install `caddy`: https://caddyserver.com/docs/install
+
+### Backend
+
+Build and run the frontend:
+
+```bash
+cd web/frontend
+npm run dev
+```
+
+Build the backend server and run it in dev mode:
+
+```bash
+go build -o podscript
+./podscript web --dev
+```
+
+This will start the backend server and expose only the API endpoints without bundling the frontend assets
+
+To connect the two:
+
+```bash
+cd web
+caddy run
+```
+
+This should setup everything such that you can visit `http://localhost:8080` and have the frontend connected to the backend via the Caddy reverse proxy
 
 ## Feedback
 
