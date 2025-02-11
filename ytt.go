@@ -23,29 +23,40 @@ type YTTCmd struct {
 func (cmd *YTTCmd) getLLMClient() (LLMClient, error) {
 	var provider LLMProvider
 
+	config := Config{
+		OpenAIAPIKey:       cmd.OpenAIAPIKey,
+		AnthropicAPIKey:    cmd.AnthropicAPIKey,
+		GroqAPIKey:         cmd.GroqAPIKey,
+		GeminiAPIKey:       cmd.GeminiAPIKey,
+		AWSRegion:          cmd.AWSRegion,
+		AWSAccessKeyID:     cmd.AWSAccessKeyID,
+		AWSSecretAccessKey: cmd.AWSSecretAccessKey,
+		AWSSessionToken:    cmd.AWSSessionToken,
+	}
+
 	switch cmd.Model {
 	case GPT4o, GPT4oMini:
-		if cmd.OpenAIAPIKey == "" {
+		if config.OpenAIAPIKey == "" {
 			return nil, fmt.Errorf("OpenAI API key required for model %s", cmd.Model)
 		}
 		provider = OpenAI
 	case Claude35Sonnet, Claude35Haiku:
-		if cmd.AnthropicAPIKey == "" {
+		if config.AnthropicAPIKey == "" {
 			return nil, fmt.Errorf("Anthropic API key required for model %s", cmd.Model)
 		}
 		provider = Claude
 	case Llama3370b, Llama318b:
-		if cmd.GroqAPIKey == "" {
+		if config.GroqAPIKey == "" {
 			return nil, fmt.Errorf("Groq API key required for model %s", cmd.Model)
 		}
 		provider = Groq
 	case Gemini2Flash:
-		if cmd.GeminiAPIKey == "" {
+		if config.GeminiAPIKey == "" {
 			return nil, fmt.Errorf("Gemini API key required for model %s", cmd.Model)
 		}
 		provider = Gemini
 	case BedrockClaude35Sonnet, BedrockClaude35Haiku:
-		if cmd.AWSRegion == "" || cmd.AWSAccessKeyID == "" || cmd.AWSSecretAccessKey == "" || cmd.AWSSessionToken == "" {
+		if config.AWSRegion == "" || config.AWSAccessKeyID == "" || config.AWSSecretAccessKey == "" || config.AWSSessionToken == "" {
 			return nil, fmt.Errorf("AWS credentials required for model %s. Run 'podscript configure' to set them up", cmd.Model)
 		}
 		provider = Bedrock
@@ -53,7 +64,7 @@ func (cmd *YTTCmd) getLLMClient() (LLMClient, error) {
 		return nil, fmt.Errorf("unsupported model: %s", cmd.Model)
 	}
 
-	return NewLLMClient(provider, cmd)
+	return NewLLMClient(provider, config)
 }
 
 func (cmd *YTTCmd) Run() error {

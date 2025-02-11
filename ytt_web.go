@@ -64,7 +64,7 @@ func handleYTT(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client, err := NewLLMClient(provider, config)
+	client, err := NewLLMClient(provider, *config)
 	if err != nil {
 		http.Error(w, "Failed to initialize LLM client", http.StatusInternalServerError)
 		return

@@ -87,18 +87,18 @@ type LLMClient interface {
 	CompleteStream(ctx context.Context, req CompletionRequest) (<-chan CompletionChunk, <-chan error)
 }
 
-func NewLLMClient(provider LLMProvider, cmd *YTTCmd) (LLMClient, error) {
+func NewLLMClient(provider LLMProvider, config Config) (LLMClient, error) {
 	switch provider {
 	case OpenAI:
-		return NewOpenAIClient(cmd.OpenAIAPIKey), nil
+		return NewOpenAIClient(config.OpenAIAPIKey), nil
 	case Claude:
-		return NewClaudeClient(cmd.AnthropicAPIKey), nil
+		return NewClaudeClient(config.AnthropicAPIKey), nil
 	case Groq:
-		return NewGroqClient(cmd.GroqAPIKey), nil
+		return NewGroqClient(config.GroqAPIKey), nil
 	case Gemini:
-		return NewGeminiClient(cmd.GeminiAPIKey), nil
+		return NewGeminiClient(config.GeminiAPIKey), nil
 	case Bedrock:
-		return NewBedrockClient(cmd.AWSRegion, cmd.AWSAccessKeyID, cmd.AWSSecretAccessKey, cmd.AWSSessionToken)
+		return NewBedrockClient(config.AWSRegion, config.AWSAccessKeyID, config.AWSSecretAccessKey, config.AWSSessionToken)
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", provider)
 	}
