@@ -11,12 +11,16 @@ import (
 )
 
 type Config struct {
-	AssemblyAIAPIKey string `toml:"assembly-ai-api-key" json:"assembly_ai_api_key"`
-	DeepgramAPIKey   string `toml:"deepgram-api-key" json:"deepgram_api_key"`
-	GroqAPIKey       string `toml:"groq-api-key" json:"groq_api_key"`
-	AnthropicAPIKey  string `toml:"anthropic-api-key" json:"anthropic_api_key"`
-	OpenAIAPIKey     string `toml:"openai-api-key" json:"openai_api_key"`
-	GeminiAPIKey     string `toml:"gemini-api-key" json:"gemini_api_key"`
+	AssemblyAIAPIKey   string `toml:"assembly-ai-api-key" json:"assembly_ai_api_key"`
+	DeepgramAPIKey     string `toml:"deepgram-api-key" json:"deepgram_api_key"`
+	GroqAPIKey         string `toml:"groq-api-key" json:"groq_api_key"`
+	AnthropicAPIKey    string `toml:"anthropic-api-key" json:"anthropic_api_key"`
+	OpenAIAPIKey       string `toml:"openai-api-key" json:"openai_api_key"`
+	GeminiAPIKey       string `toml:"gemini-api-key" json:"gemini_api_key"`
+	AWSRegion          string `toml:"aws-region" json:"aws_region"`
+	AWSAccessKeyID     string `toml:"aws-access-key-id" json:"aws_access_key_id"`
+	AWSSecretAccessKey string `toml:"aws-secret-access-key" json:"aws_secret_access_key"`
+	AWSSessionToken    string `toml:"aws-session-token" json:"aws_session_token"`
 }
 
 type ConfigureCmd struct{}
@@ -43,6 +47,10 @@ func (c *ConfigureCmd) Run() error {
 		{"Groq API key", &config.GroqAPIKey},
 		{"AssemblyAI API key", &config.AssemblyAIAPIKey},
 		{"Gemini API key", &config.GeminiAPIKey},
+		{"AWS Region", &config.AWSRegion},
+		{"AWS Access Key ID", &config.AWSAccessKeyID},
+		{"AWS Secret Access Key", &config.AWSSecretAccessKey},
+		{"AWS Session Token", &config.AWSSessionToken},
 	}
 
 	for _, p := range prompts {

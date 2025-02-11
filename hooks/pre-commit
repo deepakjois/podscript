@@ -16,19 +16,7 @@ cd web/frontend || exit 1
 # Run build
 npm run build || { echo "Build failed"; exit 1; }
 
-# Go back and copy dist files
-cd "$CURRENT_DIR" || exit 1
-
-# Create dist dir if it doesn't exist
-mkdir -p dist
-
-# Remove any previous contents
-rm -rf dist/*
-
-# Copy contents
-cp -r web/frontend/dist/* dist/
-
-# Stage the new dist files
+# Stage the new dist files that were outputted by vite
 git add dist/
 
 exit 0 

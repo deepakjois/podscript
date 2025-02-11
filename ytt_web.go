@@ -26,39 +26,45 @@ func handleYTT(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var apiKey string
-	switch model {
-	case GPT4o, GPT4oMini:
+	provider := getProviderForModel(model)
+	if provider == "" {
+		http.Error(w, "Unsupported model", http.StatusBadRequest)
+		return
+	}
+
+	// Validate required credentials
+	switch provider {
+	case OpenAI:
 		if config.OpenAIAPIKey == "" {
 			http.Error(w, fmt.Sprintf("OpenAI API key required for model %s", model), http.StatusBadRequest)
 			return
 		}
-		apiKey = config.OpenAIAPIKey
-	case Claude35Sonnet, Claude35Haiku:
+	case Claude:
 		if config.AnthropicAPIKey == "" {
 			http.Error(w, fmt.Sprintf("Anthropic API key required for model %s", model), http.StatusBadRequest)
 			return
 		}
-		apiKey = config.AnthropicAPIKey
-	case Llama3370b, Llama318b:
+	case Groq:
 		if config.GroqAPIKey == "" {
 			http.Error(w, fmt.Sprintf("Groq API key required for model %s", model), http.StatusBadRequest)
 			return
 		}
-		apiKey = config.GroqAPIKey
-	case Gemini2Flash:
+	case Bedrock:
+		if config.AWSRegion == "" || config.AWSAccessKeyID == "" || config.AWSSecretAccessKey == "" {
+			http.Error(w, fmt.Sprintf("AWS credentials required for model %s. Run 'podscript configure' to set them up", model), http.StatusBadRequest)
+			return
+		}
+	case Gemini:
 		if config.GeminiAPIKey == "" {
 			http.Error(w, fmt.Sprintf("Gemini API key required for model %s", model), http.StatusBadRequest)
 			return
 		}
-		apiKey = config.GeminiAPIKey
 	default:
 		http.Error(w, "Unsupported model", http.StatusBadRequest)
 		return
 	}
 
-	provider := getProviderForModel(model)
-	client, err := NewLLMClient(provider, apiKey)
+	client, err := NewLLMClient(provider, config)
 	if err != nil {
 		http.Error(w, "Failed to initialize LLM client", http.StatusInternalServerError)
 		return
@@ -108,6 +114,8 @@ func handleYTT(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
+		// Log the error server-side
+		fmt.Printf("[ERROR] Transcription failed: %v\n", err)
 		fmt.Fprintf(w, "event: error\ndata: %s\n\n", err.Error())
 		flusher.Flush()
 	}
@@ -123,6 +131,8 @@ func getProviderForModel(model LLMModel) LLMProvider {
 		return Groq
 	case Gemini2Flash:
 		return Gemini
+	case BedrockClaude35Sonnet, BedrockClaude35Haiku:
+		return Bedrock
 	default:
 		return ""
 	}
