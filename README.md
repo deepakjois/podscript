@@ -56,6 +56,7 @@ The `ytt` subommand uses the `gpt-4o` model by default. Use `--model` flag to se
 - `claude-3-5-haiku-20241022`
 - `llama-3.3-70b-versatile`
 - `llama-3.1-8b-instant`
+- `gemini-2.0-flash`
 
 ### Transcript from audio URLs and files
 > [!TIP]

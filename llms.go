@@ -11,6 +11,9 @@ import (
 	openoption "github.com/openai/openai-go/option"
 
 	"github.com/deepakjois/groq"
+
+	"github.com/google/generative-ai-go/genai"
+	"google.golang.org/api/option"
 )
 
 type LLMProvider string
@@ -19,6 +22,7 @@ const (
 	OpenAI LLMProvider = "openai"
 	Claude LLMProvider = "claude"
 	Groq   LLMProvider = "groq"
+	Gemini LLMProvider = "gemini"
 )
 
 type LLMModel string
@@ -30,6 +34,8 @@ const (
 	Claude35Haiku  LLMModel = "claude-3-5-haiku-20241022"
 	Llama3370b     LLMModel = "llama-3.3-70b-versatile"
 	Llama318b      LLMModel = "llama-3.1-8b-instant"
+	// Gemini models
+	Gemini2Flash LLMModel = "gemini-2.0-flash"
 )
 
 // output token limits for each model
@@ -40,6 +46,7 @@ var modelTokenLimits = map[LLMModel]int{
 	Claude35Haiku:  8192,
 	Llama3370b:     32768,
 	Llama318b:      8192,
+	Gemini2Flash:   32768,
 }
 
 // CompletionRequest represents a generic completion request
@@ -76,6 +83,8 @@ func NewLLMClient(provider LLMProvider, apiKey string) (LLMClient, error) {
 		return NewClaudeClient(apiKey), nil
 	case Groq:
 		return NewGroqClient(apiKey), nil
+	case Gemini:
+		return NewGeminiClient(apiKey), nil
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", provider)
 	}
@@ -146,6 +155,88 @@ func (c *OpenAIClient) CompleteStream(ctx context.Context, req CompletionRequest
 		if err := stream.Err(); err != nil {
 			errChan <- err
 			return
+		}
+
+		// Send final done chunk
+		chunkChan <- CompletionChunk{
+			Done: true,
+		}
+	}()
+
+	return chunkChan, errChan
+}
+
+type GeminiClient struct {
+	client *genai.Client
+	model  *genai.GenerativeModel
+}
+
+func NewGeminiClient(apiKey string) *GeminiClient {
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))
+	if err != nil {
+		panic(fmt.Sprintf("failed to create Gemini client: %v", err))
+	}
+
+	model := client.GenerativeModel("gemini-2.0-flash")
+	return &GeminiClient{
+		client: client,
+		model:  model,
+	}
+}
+
+func (c *GeminiClient) Complete(ctx context.Context, req CompletionRequest) (*CompletionResponse, error) {
+	prompt := req.UserPrompt
+	if req.SystemPrompt != "" {
+		prompt = req.SystemPrompt + "\n\n" + req.UserPrompt
+	}
+
+	resp, err := c.model.GenerateContent(ctx, genai.Text(prompt))
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate content: %w", err)
+	}
+
+	if len(resp.Candidates) == 0 || len(resp.Candidates[0].Content.Parts) == 0 {
+		return nil, fmt.Errorf("no content in response")
+	}
+
+	return &CompletionResponse{
+		Text:     fmt.Sprint(resp.Candidates[0].Content.Parts[0]),
+		Provider: Gemini,
+	}, nil
+}
+
+func (c *GeminiClient) CompleteStream(ctx context.Context, req CompletionRequest) (<-chan CompletionChunk, <-chan error) {
+	chunkChan := make(chan CompletionChunk)
+	errChan := make(chan error, 1)
+
+	go func() {
+		defer close(chunkChan)
+		defer close(errChan)
+
+		prompt := req.UserPrompt
+		if req.SystemPrompt != "" {
+			prompt = req.SystemPrompt + "\n\n" + req.UserPrompt
+		}
+
+		iter := c.model.GenerateContentStream(ctx, genai.Text(prompt))
+		for {
+			resp, err := iter.Next()
+			if err != nil {
+				if err.Error() == "iterator done" {
+					break
+				}
+				errChan <- fmt.Errorf("stream error: %w", err)
+				return
+			}
+
+			if len(resp.Candidates) > 0 && len(resp.Candidates[0].Content.Parts) > 0 {
+				chunkChan <- CompletionChunk{
+					Text:     fmt.Sprint(resp.Candidates[0].Content.Parts[0]),
+					Provider: Gemini,
+					Done:     false,
+				}
+			}
 		}
 
 		// Send final done chunk

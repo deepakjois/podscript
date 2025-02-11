@@ -46,6 +46,12 @@ func handleYTT(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		apiKey = config.GroqAPIKey
+	case Gemini2Flash:
+		if config.GeminiAPIKey == "" {
+			http.Error(w, fmt.Sprintf("Gemini API key required for model %s", model), http.StatusBadRequest)
+			return
+		}
+		apiKey = config.GeminiAPIKey
 	default:
 		http.Error(w, "Unsupported model", http.StatusBadRequest)
 		return
@@ -115,6 +121,8 @@ func getProviderForModel(model LLMModel) LLMProvider {
 		return Claude
 	case Llama3370b, Llama318b:
 		return Groq
+	case Gemini2Flash:
+		return Gemini
 	default:
 		return ""
 	}

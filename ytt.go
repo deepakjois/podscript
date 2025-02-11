@@ -10,6 +10,7 @@ type YTTCmd struct {
 	OpenAIAPIKey    string   `name:"openai-api-key" help:"OpenAI API key" env:"OPENAI_API_KEY" hidden:""`
 	AnthropicAPIKey string   `help:"Anthropic API key" env:"ANTHROPIC_API_KEY" hidden:""`
 	GroqAPIKey      string   `help:"Groq API key" env:"GROQ_API_KEY" hidden:""`
+	GeminiAPIKey    string   `help:"Gemini API key" env:"GEMINI_API_KEY" hidden:""`
 	Model           LLMModel `help:"Model to use" default:"gpt-4o" short:"m"`
 	VideoURL        string   `arg:"" help:"YouTube video URL" short:"u"`
 	Output          string   `help:"Path to output transcript file (default: stdout)" short:"o"`
@@ -38,6 +39,12 @@ func (cmd *YTTCmd) getLLMClient() (LLMClient, error) {
 		}
 		provider = Groq
 		apiKey = cmd.GroqAPIKey
+	case Gemini2Flash:
+		if cmd.GeminiAPIKey == "" {
+			return nil, fmt.Errorf("Gemini API key required for model %s", cmd.Model)
+		}
+		provider = Gemini
+		apiKey = cmd.GeminiAPIKey
 	default:
 		return nil, fmt.Errorf("unsupported model: %s", cmd.Model)
 	}
