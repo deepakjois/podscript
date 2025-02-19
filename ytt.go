@@ -57,7 +57,7 @@ func (cmd *YTTCmd) getLLMClient() (LLMClient, error) {
 		provider = Gemini
 	case BedrockClaude35Sonnet, BedrockClaude35Haiku:
 		if config.AWSRegion == "" || config.AWSAccessKeyID == "" || config.AWSSecretAccessKey == "" || config.AWSSessionToken == "" {
-			return nil, fmt.Errorf("AWS credentials required for model %s. Run 'podscript configure' to set them up", cmd.Model)
+			return nil, fmt.Errorf("AWS credentials required for model %s", cmd.Model)
 		}
 		provider = Bedrock
 	default:

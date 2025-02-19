@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/anthropics/anthropic-sdk-go"
@@ -19,6 +20,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
 	"github.com/google/generative-ai-go/genai"
+	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
 
@@ -56,7 +58,7 @@ var modelTokenLimits = map[LLMModel]int{
 	Claude35Haiku:         8192,
 	Llama3370b:            32768,
 	Llama318b:             8192,
-	Gemini2Flash:          32768,
+	Gemini2Flash:          8192,
 	BedrockClaude35Sonnet: 4096,
 	BedrockClaude35Haiku:  4096,
 }
@@ -237,7 +239,7 @@ func (c *GeminiClient) CompleteStream(ctx context.Context, req CompletionRequest
 		for {
 			resp, err := iter.Next()
 			if err != nil {
-				if err.Error() == "iterator done" {
+				if errors.Is(err, iterator.Done) {
 					break
 				}
 				errChan <- fmt.Errorf("stream error: %w", err)
