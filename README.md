@@ -50,15 +50,21 @@ podscript groq --file huberman.mp3
 #### Models for ytt subcommand
 The `ytt` subommand uses the `gpt-4o` model by default. Use `--model` flag to set a different model. The following are supported:
 
-- `gpt-4o`
-- `gpt-4o-mini`
-- `claude-3-5-sonnet-20241022`
-- `claude-3-5-haiku-20241022`
-- `llama-3.3-70b-versatile`
-- `llama-3.1-8b-instant`
-- `gemini-2.0-flash`
-- `anthropic.claude-3-5-sonnet-20241022-v2:0`
-- `anthropic.claude-3-5-haiku-20241022-v1:0`
+- OpenAI
+  - `gpt-4o`
+  - `gpt-4o-mini`
+- Google Gemini
+  - `gemini-2.0-flash`
+- Llama (via [Groq](https://groq.com/))
+  - `llama-3.3-70b-versatile`
+  - `llama-3.1-8b-instant`
+- Anthropic
+  - `claude-3-5-sonnet-20241022`
+  - `claude-3-5-haiku-20241022`
+- Anthropic via [Amazon Bedrock](https://aws.amazon.com/bedrock/)
+  - `anthropic.claude-3-5-sonnet-20241022-v2:0` (via AWS)
+  - `anthropic.claude-3-5-haiku-20241022-v1:0` (via AWS)
+
 
 ### Transcript from audio URLs and files
 > [!TIP]
