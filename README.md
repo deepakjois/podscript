@@ -86,8 +86,6 @@ Want to contribute? Here's how to build and run the project locally:
 - Install `npm`: https://docs.npmjs.com/downloading-and-installing-node-js-and-npm?ref=meilisearch-blog
 - Install `caddy`: https://caddyserver.com/docs/install
 
-### Backend
-
 Build and run the frontend:
 
 ```bash
