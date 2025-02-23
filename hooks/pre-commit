@@ -19,4 +19,4 @@ npm run build || { echo "Build failed"; exit 1; }
 # Stage the new dist files that were outputted by vite
 git add dist/
 
-exit 0 
+exit 0
