@@ -26,3 +26,4 @@ scratch.go
 #VS Code Settings
 .vscode
 .vite
+.cursor
