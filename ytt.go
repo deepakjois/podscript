@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
+	"sort"
 )
 
 type YTTCmd struct {
@@ -16,8 +18,9 @@ type YTTCmd struct {
 	AWSSecretAccessKey string   `help:"AWS Secret Access Key ID" env:"AWS_SECRET_ACCESS_KEY" hidden:""`
 	AWSSessionToken    string   `help:"AWS Session Token" env:"AWS_SESSION_TOKEN" hidden:""`
 	Model              LLMModel `help:"Model to use" default:"gpt-4o" short:"m"`
-	VideoURL           string   `arg:"" help:"YouTube video URL" short:"u"`
+	VideoURL           *url.URL `arg:"" help:"YouTube video URL" short:"u" optional:""`
 	Output             string   `help:"Path to output transcript file (default: stdout)" short:"o"`
+	ListModels         bool     `help:"List available models" short:"l"`
 }
 
 func (cmd *YTTCmd) getLLMClient() (LLMClient, error) {
@@ -68,6 +71,19 @@ func (cmd *YTTCmd) getLLMClient() (LLMClient, error) {
 }
 
 func (cmd *YTTCmd) Run() error {
+	if cmd.ListModels {
+		fmt.Println("Available models:")
+		models := make([]string, 0, len(modelTokenLimits))
+		for model := range modelTokenLimits {
+			models = append(models, string(model))
+		}
+		sort.Strings(models)
+		for _, model := range models {
+			fmt.Printf("  %s\n", model)
+		}
+		return nil
+	}
+
 	client, err := cmd.getLLMClient()
 	if err != nil {
 		return err
@@ -84,7 +100,7 @@ func (cmd *YTTCmd) Run() error {
 	}
 
 	transcriber := NewYouTubeTranscriber(client, cmd.Model)
-	err = transcriber.Transcribe(context.Background(), cmd.VideoURL,
+	err = transcriber.Transcribe(context.Background(), cmd.VideoURL.String(),
 		func(text string, done bool) error {
 			_, err := fmt.Fprint(out, text)
 			return err
