@@ -6,6 +6,8 @@ import (
 	"net/url"
 	"os"
 	"sort"
+
+	"github.com/alecthomas/kong"
 )
 
 type YTTCmd struct {
@@ -68,6 +70,13 @@ func (cmd *YTTCmd) getLLMClient() (LLMClient, error) {
 	}
 
 	return NewLLMClient(provider, config)
+}
+
+func (cmd *YTTCmd) Validate(kctx *kong.Context) error {
+	if cmd.VideoURL == nil {
+		return fmt.Errorf("YouTube video URL is required")
+	}
+	return nil
 }
 
 func (cmd *YTTCmd) Run() error {
