@@ -8,9 +8,13 @@ fi
 
 echo "Frontend changes detected. Building and copying dist..."
 
-# Navigate to frontend dir and run build
-{ cd web/frontend && npm run build }
+CURRENT_DIR=$(pwd)
 
+# Navigate to frontend dir and run build
+cd web/frontend
+npm run build
+
+cd "$CURRENT_DIR"
 
 # Stage the new dist files that were outputted by vite
 git add dist/
