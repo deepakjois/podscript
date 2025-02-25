@@ -47,6 +47,7 @@
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^4.1.2",
+		"@radix-ui/react-accordion": "^1.2.3",
 		"zod": "^3.24.2"
 	}
 }
