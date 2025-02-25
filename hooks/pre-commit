@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Check if there are changes in web/frontend
 if git diff --cached --quiet web/frontend/; then
@@ -7,14 +8,9 @@ fi
 
 echo "Frontend changes detected. Building and copying dist..."
 
-# Store current dir
-CURRENT_DIR=$(pwd)
+# Navigate to frontend dir and run build
+{ cd web/frontend && npm run build }
 
-# Navigate to frontend dir
-cd web/frontend || exit 1
-
-# Run build
-npm run build || { echo "Build failed"; exit 1; }
 
 # Stage the new dist files that were outputted by vite
 git add dist/
