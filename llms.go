@@ -39,27 +39,27 @@ type LLMModel string
 const (
 	GPT4o          LLMModel = "gpt-4o"
 	GPT4oMini      LLMModel = "gpt-4o-mini"
-	Claude35Sonnet LLMModel = "claude-3-5-sonnet-20241022"
+	Claude37Sonnet LLMModel = "claude-3-7-sonnet-20250219"
 	Claude35Haiku  LLMModel = "claude-3-5-haiku-20241022"
 	Llama3370b     LLMModel = "llama-3.3-70b-versatile"
 	Llama318b      LLMModel = "llama-3.1-8b-instant"
 	// Gemini models
 	Gemini2Flash LLMModel = "gemini-2.0-flash"
 	// Bedrock models
-	BedrockClaude35Sonnet LLMModel = "anthropic.claude-3-5-sonnet-20241022-v2:0"
 	BedrockClaude35Haiku  LLMModel = "anthropic.claude-3-5-haiku-20241022-v1:0"
+	BedrockClaude37Sonnet LLMModel = "anthropic.claude-3-7-sonnet-20250219-v1:0"
 )
 
 // output token limits for each model
 var modelTokenLimits = map[LLMModel]int{
 	GPT4o:                 16384,
 	GPT4oMini:             16384,
-	Claude35Sonnet:        8192,
+	Claude37Sonnet:        8192,
 	Claude35Haiku:         8192,
 	Llama3370b:            32768,
 	Llama318b:             8192,
 	Gemini2Flash:          8192,
-	BedrockClaude35Sonnet: 4096,
+	BedrockClaude37Sonnet: 4096,
 	BedrockClaude35Haiku:  4096,
 }
 

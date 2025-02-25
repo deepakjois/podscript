@@ -45,7 +45,7 @@ func (cmd *YTTCmd) getLLMClient() (LLMClient, error) {
 			return nil, fmt.Errorf("OpenAI API key required for model %s", cmd.Model)
 		}
 		provider = OpenAI
-	case Claude35Sonnet, Claude35Haiku:
+	case Claude35Haiku, Claude37Sonnet:
 		if config.AnthropicAPIKey == "" {
 			return nil, fmt.Errorf("Anthropic API key required for model %s", cmd.Model)
 		}
@@ -60,7 +60,7 @@ func (cmd *YTTCmd) getLLMClient() (LLMClient, error) {
 			return nil, fmt.Errorf("Gemini API key required for model %s", cmd.Model)
 		}
 		provider = Gemini
-	case BedrockClaude35Sonnet, BedrockClaude35Haiku:
+	case BedrockClaude37Sonnet, BedrockClaude35Haiku:
 		if config.AWSRegion == "" || config.AWSAccessKeyID == "" || config.AWSSecretAccessKey == "" || config.AWSSessionToken == "" {
 			return nil, fmt.Errorf("AWS credentials required for model %s", cmd.Model)
 		}

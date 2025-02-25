@@ -125,13 +125,13 @@ func getProviderForModel(model LLMModel) LLMProvider {
 	switch model {
 	case GPT4o, GPT4oMini:
 		return OpenAI
-	case Claude35Sonnet, Claude35Haiku:
+	case Claude37Sonnet, Claude35Haiku:
 		return Claude
 	case Llama3370b, Llama318b:
 		return Groq
 	case Gemini2Flash:
 		return Gemini
-	case BedrockClaude35Sonnet, BedrockClaude35Haiku:
+	case BedrockClaude37Sonnet, BedrockClaude35Haiku:
 		return Bedrock
 	default:
 		return ""
