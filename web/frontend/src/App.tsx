@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
 import { Settings as SettingsIcon } from 'lucide-react'
-import Settings from './components/Settings'
-import YouTubeTab from './components/YouTubeTab'
-import AudioTab from './components/AudioTab'
+import Settings from '@/components/Settings'
+import YouTubeTab from '@/components/YouTubeTab'
+import AudioTab from '@/components/AudioTab'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 function App() {
   const [showSettings, setShowSettings] = useState(false)
@@ -26,40 +26,22 @@ function App() {
         {showSettings ? (
           <Settings onClose={() => setShowSettings(false)} />
         ) : (
-          <TabGroup>
-            <TabList className="flex space-x-1 rounded-xl bg-gray-100 p-1">
-              <Tab
-                className={({ selected }) =>
-                  `w-full rounded-lg py-2.5 text-sm leading-5 font-medium ${
-                    selected
-                      ? 'bg-white shadow'
-                      : 'text-gray-700 hover:bg-white/[0.12] hover:text-gray-800'
-                  }`
-                }
-              >
+          <Tabs defaultValue="youtube">
+            <TabsList className="w-full">
+              <TabsTrigger value="youtube" className="flex-1">
                 YouTube URL
-              </Tab>
-              <Tab
-                className={({ selected }) =>
-                  `w-full rounded-lg py-2.5 text-sm leading-5 font-medium ${
-                    selected
-                      ? 'bg-white shadow'
-                      : 'text-gray-700 hover:bg-white/[0.12] hover:text-gray-800'
-                  }`
-                }
-              >
+              </TabsTrigger>
+              <TabsTrigger value="audio" className="flex-1">
                 Audio URL
-              </Tab>
-            </TabList>
-            <TabPanels className="mt-4">
-              <TabPanel>
-                <YouTubeTab />
-              </TabPanel>
-              <TabPanel>
-                <AudioTab />
-              </TabPanel>
-            </TabPanels>
-          </TabGroup>
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="youtube">
+              <YouTubeTab />
+            </TabsContent>
+            <TabsContent value="audio">
+              <AudioTab />
+            </TabsContent>
+          </Tabs>
         )}
       </div>
     </>
