@@ -49,6 +49,7 @@ const PasswordInput = ({ id, value, onChange, placeholder, label }: PasswordInpu
           onChange={onChange}
           placeholder={placeholder}
           autoComplete="new-password" // Prevent browser password autofill
+          className="placeholder:text-muted-foreground/60" // Added lighter placeholder styling
         />
         <button
           type="button"
@@ -356,6 +357,7 @@ const SettingsPanel = () => {
                         onChange={e => handleChange('aws', 'region', e.target.value)}
                         placeholder="us-east-1"
                         autoComplete="off"
+                        className="placeholder:text-muted-foreground/60"
                       />
                     </div>
                   </div>
