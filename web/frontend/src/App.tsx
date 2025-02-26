@@ -2,15 +2,14 @@ import { useState, useEffect } from 'react'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Moon, Sun, Settings, Mic, Youtube } from 'lucide-react'
 import YouTubeTranscription from '@/components/YouTubeTranscription'
 import AudioTranscription from '@/components/AudioTranscription'
 import SettingsPanel from '@/components/SettingsPanel'
+import { Toaster } from 'sonner'
 
 const App = () => {
   // Main state
-  const [youtubeData, setYoutubeData] = useState({ url: '', model: 'gpt-4o' })
   const [audioData, setAudioData] = useState<{ url: string; source: string; file: File | null }>({
     url: '',
     source: 'deepgram',
@@ -18,7 +17,6 @@ const App = () => {
   })
   const [theme, setTheme] = useState('dark')
   const [isLoading, setIsLoading] = useState(false)
-  const [transcript, setTranscript] = useState('')
   const [inputMethod, setInputMethod] = useState('url') // 'url' or 'file'
 
   // Update theme when it changes
@@ -31,24 +29,17 @@ const App = () => {
     setTheme(theme === 'light' ? 'dark' : 'light')
   }
 
-  // Handle form submission for transcription
-  const handleTranscribe = async (e: React.FormEvent) => {
+  // Handle form submission for audio transcription
+  const handleAudioTranscribe = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const activeTab = document
-      .querySelector('[role="tabpanel"][data-state="active"]')
-      ?.getAttribute('data-value')
     let canProceed = false
 
-    if (activeTab === 'youtube' && youtubeData.url) {
+    if (
+      (inputMethod === 'url' && audioData.url && audioData.source !== 'groq') ||
+      (inputMethod === 'file' && audioData.file)
+    ) {
       canProceed = true
-    } else if (activeTab === 'audio') {
-      if (
-        (inputMethod === 'url' && audioData.url && audioData.source !== 'groq') ||
-        (inputMethod === 'file' && audioData.file)
-      ) {
-        canProceed = true
-      }
     }
 
     if (!canProceed) return
@@ -59,12 +50,13 @@ const App = () => {
       // This would be replaced with actual API call
       await new Promise(resolve => setTimeout(resolve, 2000))
 
-      // Mock transcript response
-      setTranscript(
-        'Sample transcript would appear here. This is a placeholder for the actual transcript content that would be returned from the API after processing the audio or YouTube captions.',
-      )
+      // Mock success - would be replaced with actual API response handling
+      console.log('Audio transcription completed')
     } catch (error) {
-      console.error('Error transcribing:', error)
+      console.error(
+        'Error transcribing audio:',
+        error instanceof Error ? error.message : 'Unknown error',
+      )
     } finally {
       setIsLoading(false)
     }
@@ -72,11 +64,14 @@ const App = () => {
 
   return (
     <div className="bg-background text-foreground min-h-screen transition-colors">
+      {/* Toast provider */}
+      <Toaster position="top-center" />
+
       {/* Header */}
       <header className="flex items-center justify-between border-b p-4">
         <div className="flex items-center gap-2">
           <Mic className="h-6 w-6" />
-          <h1 className="text-xl font-bold">Podscript</h1>
+          <h1 className="font-mono text-xl font-bold">podscript</h1>
         </div>
 
         <div className="flex items-center gap-2">
@@ -108,21 +103,16 @@ const App = () => {
           <TabsList className="mb-6 w-full">
             <TabsTrigger value="youtube" className="flex w-1/2 items-center gap-2">
               <Youtube className="h-4 w-4" />
-              YouTube Transcription
+              YouTube URL
             </TabsTrigger>
             <TabsTrigger value="audio" className="flex w-1/2 items-center gap-2">
               <Mic className="h-4 w-4" />
-              Audio Transcription
+              Audio URL
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="youtube">
-            <YouTubeTranscription
-              youtubeData={youtubeData}
-              setYoutubeData={setYoutubeData}
-              handleTranscribe={handleTranscribe}
-              isLoading={isLoading}
-            />
+            <YouTubeTranscription />
           </TabsContent>
 
           <TabsContent value="audio">
@@ -131,23 +121,11 @@ const App = () => {
               setAudioData={setAudioData}
               inputMethod={inputMethod}
               setInputMethod={setInputMethod}
-              handleTranscribe={handleTranscribe}
+              handleTranscribe={handleAudioTranscribe}
               isLoading={isLoading}
             />
           </TabsContent>
         </Tabs>
-
-        {/* Transcript Display */}
-        {transcript && (
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle>Transcript</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-muted rounded-md p-4 whitespace-pre-wrap">{transcript}</div>
-            </CardContent>
-          </Card>
-        )}
       </main>
     </div>
   )
