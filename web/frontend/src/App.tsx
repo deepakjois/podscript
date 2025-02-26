@@ -6,7 +6,7 @@ import { Moon, Sun, Settings, Mic, Youtube, AlertCircle } from 'lucide-react'
 import YouTubeTranscription, { YouTubeTranscriptionState } from '@/components/YouTubeTranscription'
 import AudioTranscription from '@/components/AudioTranscription'
 import SettingsPanel from '@/components/SettingsPanel'
-import { Toaster } from 'sonner'
+import { Toaster, toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Loader2 } from 'lucide-react'
 
@@ -30,6 +30,7 @@ const App = () => {
     model: '',
     transcript: '',
     error: '',
+    isTranscribing: false,
   })
 
   // Audio URL transcription state
@@ -195,13 +196,27 @@ const App = () => {
 
       {/* Main Content */}
       <main className="container mx-auto max-w-3xl p-4">
-        <Tabs defaultValue="youtube" className="w-full">
+        <Tabs
+          defaultValue="youtube"
+          className="w-full"
+          onValueChange={() => {
+            // Prevent tab switching if transcription is in progress
+            if (youtubeState.isTranscribing) {
+              toast.error('Please cancel the active transcription before switching tabs')
+              return false
+            }
+          }}
+        >
           <TabsList className="mb-6 w-full">
             <TabsTrigger value="youtube" className="flex w-1/2 items-center gap-2">
               <Youtube className="h-4 w-4" />
               YouTube URL
             </TabsTrigger>
-            <TabsTrigger value="audio" className="flex w-1/2 items-center gap-2">
+            <TabsTrigger
+              value="audio"
+              className="flex w-1/2 items-center gap-2"
+              disabled={youtubeState.isTranscribing}
+            >
               <Mic className="h-4 w-4" />
               Audio URL
             </TabsTrigger>
