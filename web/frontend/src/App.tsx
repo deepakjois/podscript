@@ -4,7 +4,10 @@ import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { Moon, Sun, Settings, Mic, Youtube, AlertCircle } from 'lucide-react'
 import YouTubeTranscription, { YouTubeTranscriptionState } from '@/components/YouTubeTranscription'
-import AudioTranscription from '@/components/AudioTranscription'
+import AudioTranscription, {
+  AudioTranscriptionState,
+  STT_PROVIDERS,
+} from '@/components/AudioTranscription'
 import SettingsPanel from '@/components/SettingsPanel'
 import { Toaster, toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -20,7 +23,13 @@ const App = () => {
   const [theme, setTheme] = useState('dark')
 
   // Models state
-  const [models, setModels] = useState<{ value: string; label: string }[]>([])
+  const [ytModels, setYtModels] = useState<{ value: string; label: string }[]>([])
+  const [audioModelsMap, setAudioModelsMap] = useState<
+    Record<string, { value: string; label: string }[]>
+  >({})
+  const [currentAudioModels, setCurrentAudioModels] = useState<{ value: string; label: string }[]>(
+    [],
+  )
   const [modelsError, setModelsError] = useState('')
   const [isLoadingModels, setIsLoadingModels] = useState(true)
 
@@ -34,19 +43,21 @@ const App = () => {
   })
 
   // Audio URL transcription state
-  const [audioData, setAudioData] = useState<{ url: string; source: string; file: File | null }>({
+  const [audioState, setAudioState] = useState<AudioTranscriptionState>({
     url: '',
     source: 'deepgram',
-    file: null,
+    model: '',
+    transcript: '',
+    error: '',
+    isTranscribing: false,
   })
-
-  const [isLoading, setIsLoading] = useState(false)
-  const [inputMethod, setInputMethod] = useState('url') // 'url' or 'file'
 
   // Fetch models on mount
   useEffect(() => {
     setIsLoadingModels(true)
-    fetch('/models/ytt')
+
+    // Fetch YouTube transcription models
+    const fetchYtModels = fetch('/models/ytt')
       .then(res => res.json())
       .then((data: ModelsResponse) => {
         // Transform the models array to include labels
@@ -54,7 +65,7 @@ const App = () => {
           value: model,
           label: model,
         }))
-        setModels(modelOptions)
+        setYtModels(modelOptions)
 
         // Set initial YouTube model
         if (data.default) {
@@ -69,14 +80,106 @@ const App = () => {
           }))
         }
 
-        setIsLoadingModels(false)
+        return true
+      })
+      .catch(err => {
+        console.error('Error fetching YouTube models:', err)
+        setModelsError('Failed to load YouTube models. Please refresh the page and try again.')
+        return false
+      })
+
+    // Fetch audio transcription models for all providers
+    const fetchAllAudioModels = Promise.all(
+      STT_PROVIDERS.map(provider =>
+        fetch(`/models/${provider.value}`)
+          .then(res => res.json())
+          .then((data: ModelsResponse) => {
+            // Transform the models array to include labels
+            const modelOptions = data.models.map(model => ({
+              value: model,
+              label: model,
+            }))
+
+            return {
+              provider: provider.value,
+              models: modelOptions,
+              defaultModel: data.default || modelOptions[0]?.value,
+            }
+          })
+          .catch(err => {
+            console.error(`Error fetching models for ${provider.value}:`, err)
+            return { provider: provider.value, models: [], defaultModel: '' }
+          }),
+      ),
+    )
+      .then(results => {
+        // Create a map of provider -> models
+        const modelsMap: Record<string, { value: string; label: string }[]> = {}
+        const defaultModelsMap: Record<string, string> = {}
+
+        results.forEach(result => {
+          if (result.models.length > 0) {
+            modelsMap[result.provider] = result.models
+            defaultModelsMap[result.provider] = result.defaultModel
+          }
+        })
+
+        setAudioModelsMap(modelsMap)
+
+        // Set initial audio models to the default provider (deepgram)
+        const initialProvider = 'deepgram'
+        const initialModels = modelsMap[initialProvider] || []
+        setCurrentAudioModels(initialModels)
+
+        // Always select the first model for the initial provider
+        const firstModel = initialModels.length > 0 ? initialModels[0].value : ''
+        if (firstModel) {
+          setAudioState(prev => ({
+            ...prev,
+            model: firstModel,
+          }))
+        }
+
+        return Object.keys(modelsMap).length > 0
+      })
+      .catch(err => {
+        console.error('Error fetching audio models:', err)
+        setModelsError(prev =>
+          prev ? prev : 'Failed to load audio models. Please refresh the page and try again.',
+        )
+        return false
+      })
+
+    // Wait for both fetches to complete
+    Promise.all([fetchYtModels, fetchAllAudioModels])
+      .then(results => {
+        // If both fetches were successful or at least one was successful
+        if (results.some(result => result)) {
+          setIsLoadingModels(false)
+        }
       })
       .catch(err => {
         console.error('Error fetching models:', err)
-        setModelsError('Failed to load models. Please refresh the page and try again.')
         setIsLoadingModels(false)
       })
   }, [])
+
+  // Handle audio provider change
+  const handleAudioProviderChange = (provider: string) => {
+    // Update current audio models from the map
+    const models = audioModelsMap[provider] || []
+    setCurrentAudioModels(models)
+
+    // Always select the first model if available
+    const firstModel = models.length > 0 ? models[0].value : ''
+
+    // Update the source and model in the state
+    setAudioState(prev => ({
+      ...prev,
+      source: provider,
+      model: firstModel,
+    }))
+  }
 
   // Update theme when it changes
   useEffect(() => {
@@ -86,39 +189,6 @@ const App = () => {
   // Toggle theme
   const toggleTheme = () => {
     setTheme(theme === 'light' ? 'dark' : 'light')
-  }
-
-  // Handle form submission for audio transcription
-  const handleAudioTranscribe = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    let canProceed = false
-
-    if (
-      (inputMethod === 'url' && audioData.url && audioData.source !== 'groq') ||
-      (inputMethod === 'file' && audioData.file)
-    ) {
-      canProceed = true
-    }
-
-    if (!canProceed) return
-
-    setIsLoading(true)
-
-    try {
-      // This would be replaced with actual API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
-
-      // Mock success - would be replaced with actual API response handling
-      console.log('Audio transcription completed')
-    } catch (error) {
-      console.error(
-        'Error transcribing audio:',
-        error instanceof Error ? error.message : 'Unknown error',
-      )
-    } finally {
-      setIsLoading(false)
-    }
   }
 
   // Common header component
@@ -199,16 +269,27 @@ const App = () => {
         <Tabs
           defaultValue="youtube"
           className="w-full"
-          onValueChange={() => {
+          onValueChange={value => {
             // Prevent tab switching if transcription is in progress
-            if (youtubeState.isTranscribing) {
-              toast.error('Please cancel the active transcription before switching tabs')
+            if (youtubeState.isTranscribing && value === 'audio') {
+              toast.error('Please cancel the active YouTube transcription before switching tabs')
+              return false
+            }
+
+            if (audioState.isTranscribing && value === 'youtube') {
+              toast.error(
+                'Please wait for the audio transcription to complete before switching tabs',
+              )
               return false
             }
           }}
         >
           <TabsList className="mb-6 w-full">
-            <TabsTrigger value="youtube" className="flex w-1/2 items-center gap-2">
+            <TabsTrigger
+              value="youtube"
+              className="flex w-1/2 items-center gap-2"
+              disabled={audioState.isTranscribing}
+            >
               <Youtube className="h-4 w-4" />
               YouTube URL
             </TabsTrigger>
@@ -226,18 +307,17 @@ const App = () => {
             <YouTubeTranscription
               youtubeState={youtubeState}
               setYoutubeState={setYoutubeState}
-              models={models}
+              models={ytModels}
             />
           </TabsContent>
 
           <TabsContent value="audio">
             <AudioTranscription
-              audioData={audioData}
-              setAudioData={setAudioData}
-              inputMethod={inputMethod}
-              setInputMethod={setInputMethod}
-              handleTranscribe={handleAudioTranscribe}
-              isLoading={isLoading}
+              audioState={audioState}
+              setAudioState={setAudioState}
+              providers={STT_PROVIDERS}
+              audioModels={currentAudioModels}
+              onProviderChange={handleAudioProviderChange}
             />
           </TabsContent>
         </Tabs>
