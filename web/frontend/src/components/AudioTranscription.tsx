@@ -12,12 +12,6 @@ import { Loader2, Copy, Info, Trash2 } from 'lucide-react'
 import { useCallback } from 'react'
 import { toast } from 'sonner'
 
-// Speech-to-Text providers
-export const STT_PROVIDERS = [
-  { value: 'deepgram', label: 'Deepgram' },
-  { value: 'aai', label: 'AssemblyAI' },
-]
-
 export interface AudioTranscriptionState {
   url: string
   source: string
@@ -27,13 +21,20 @@ export interface AudioTranscriptionState {
   isTranscribing: boolean
 }
 
+export interface ProviderModel {
+  value: string
+  label: string
+}
+
+export interface AudioProvider {
+  provider: ProviderModel
+  models: ProviderModel[]
+}
+
 export interface AudioTranscriptionProps {
   audioState: AudioTranscriptionState
   setAudioState: React.Dispatch<React.SetStateAction<AudioTranscriptionState>>
-  providers: { value: string; label: string }[]
-  audioModels: { value: string; label: string }[]
-  audioModelsMap: Record<string, { value: string; label: string }[]>
-  setCurrentAudioModels: React.Dispatch<React.SetStateAction<{ value: string; label: string }[]>>
+  providers: AudioProvider[]
 }
 
 // Define response types for better type safety
@@ -42,47 +43,20 @@ interface TranscriptResponse {
   error?: string
 }
 
-const AudioTranscription = ({
-  audioState,
-  setAudioState,
-  providers,
-  audioModels,
-  audioModelsMap,
-  setCurrentAudioModels,
-}: AudioTranscriptionProps) => {
-  // Handle URL input changes
-  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAudioState(prev => ({
-      ...prev,
-      url: e.target.value,
-    }))
+const AudioTranscription = ({ audioState, setAudioState, providers }: AudioTranscriptionProps) => {
+  // Get models for the current or specified provider
+  const getModels = (providerValue = audioState.source) => {
+    return providers.find(p => p.provider.value === providerValue)?.models ?? []
   }
 
-  // Handle provider selection changes - moved from parent component
+  // Handle provider selection changes
   const handleProviderChange = (provider: string) => {
-    // Update current audio models from the map
-    const models = audioModelsMap[provider] || []
+    const models = getModels(provider)
 
-    // Always select the first model if available
-    const firstModel = models.length > 0 ? models[0].value : ''
-
-    // Important: Update both states in a specific order to ensure synchronization
-    // First update the models list
-    setCurrentAudioModels(models)
-
-    // Then update the source and model in a single state update
     setAudioState(prev => ({
       ...prev,
       source: provider,
-      model: firstModel,
-    }))
-  }
-
-  // Handle model selection changes
-  const handleModelChange = (value: string) => {
-    setAudioState(prev => ({
-      ...prev,
-      model: value,
+      model: models.length > 0 ? models[0].value : '',
     }))
   }
 
@@ -90,76 +64,36 @@ const AudioTranscription = ({
   const startTranscription = useCallback(async () => {
     if (!audioState.url || !audioState.source) return
 
-    setAudioState(prev => ({
-      ...prev,
-      error: '',
-      transcript: '',
-      isTranscribing: true,
-    }))
+    setAudioState(prev => ({ ...prev, error: '', transcript: '', isTranscribing: true }))
 
     try {
-      // Create JSON data for the request body
-      const requestBody = JSON.stringify({
-        url: audioState.url,
-        service: audioState.source,
-        model: audioState.model,
-      })
-
-      // Use POST request to send JSON in the body (standard approach)
       const response = await fetch('/audio', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: requestBody,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: audioState.url,
+          service: audioState.source,
+          model: audioState.model,
+        }),
       })
-
-      if (!response.ok) {
-        const data = (await response.json()) as TranscriptResponse
-        throw new Error(data.error ?? 'Failed to transcribe audio')
-      }
 
       const data = (await response.json()) as TranscriptResponse
 
-      setAudioState(prev => ({
-        ...prev,
-        transcript: data.text,
-        isTranscribing: false,
-      }))
+      if (!response.ok) {
+        throw new Error(data.error ?? 'Failed to transcribe audio')
+      }
 
+      setAudioState(prev => ({ ...prev, transcript: data.text, isTranscribing: false }))
       toast.success('Transcription completed')
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : 'An error occurred'
-      setAudioState(prev => ({
-        ...prev,
-        error: errorMessage,
-        isTranscribing: false,
-      }))
+      setAudioState(prev => ({ ...prev, error: errorMessage, isTranscribing: false }))
       toast.error('Transcription failed')
     }
   }, [audioState.url, audioState.source, audioState.model, setAudioState])
 
-  // Handle transcription submission
-  const handleTranscribe = (e: React.FormEvent) => {
-    e.preventDefault()
-    void startTranscription()
-  }
-
-  // Copy transcript to clipboard
-  const copyToClipboard = () => {
-    void navigator.clipboard.writeText(audioState.transcript)
-    toast.success('Copied to clipboard')
-  }
-
-  // Clear transcript and related data
-  const clearTranscript = () => {
-    setAudioState(prev => ({
-      ...prev,
-      transcript: '',
-      error: '',
-    }))
-    toast.success('Transcript cleared')
-  }
+  // Get current models for rendering
+  const currentModels = getModels()
 
   return (
     <div className="space-y-6">
@@ -168,7 +102,13 @@ const AudioTranscription = ({
           <CardTitle>Audio Transcription</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleTranscribe} className="space-y-4">
+          <form
+            onSubmit={e => {
+              e.preventDefault()
+              void startTranscription()
+            }}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <label htmlFor="audio-url" className="text-sm font-medium">
                 Audio URL
@@ -178,7 +118,7 @@ const AudioTranscription = ({
                 type="url"
                 placeholder="https://example.com/podcast.mp3"
                 value={audioState.url}
-                onChange={handleUrlChange}
+                onChange={e => setAudioState(prev => ({ ...prev, url: e.target.value }))}
                 className="placeholder:text-muted-foreground/60"
               />
               <div className="mt-2 flex items-start space-x-2 rounded-lg bg-blue-50 p-3 dark:bg-blue-950">
@@ -206,8 +146,8 @@ const AudioTranscription = ({
                 </SelectTrigger>
                 <SelectContent>
                   {providers.map(provider => (
-                    <SelectItem key={provider.value} value={provider.value}>
-                      {provider.label}
+                    <SelectItem key={provider.provider.value} value={provider.provider.value}>
+                      {provider.provider.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -219,14 +159,14 @@ const AudioTranscription = ({
                 Model
               </label>
               <Select
-                value={audioState.model || (audioModels.length > 0 ? audioModels[0].value : '')}
-                onValueChange={handleModelChange}
+                value={audioState.model || (currentModels.length > 0 ? currentModels[0].value : '')}
+                onValueChange={value => setAudioState(prev => ({ ...prev, model: value }))}
               >
                 <SelectTrigger id="model-select">
                   <SelectValue placeholder="Select a model" />
                 </SelectTrigger>
                 <SelectContent>
-                  {audioModels.map(model => (
+                  {currentModels.map(model => (
                     <SelectItem key={model.value} value={model.value}>
                       {model.label}
                     </SelectItem>
@@ -238,7 +178,7 @@ const AudioTranscription = ({
         </CardContent>
         <CardFooter>
           <Button
-            onClick={handleTranscribe}
+            onClick={() => void startTranscription()}
             disabled={audioState.isTranscribing || !audioState.url}
             className="w-full"
           >
@@ -271,7 +211,10 @@ const AudioTranscription = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={copyToClipboard}
+                  onClick={() => {
+                    void navigator.clipboard.writeText(audioState.transcript)
+                    toast.success('Copied to clipboard')
+                  }}
                   title="Copy to clipboard"
                   aria-label="Copy transcript to clipboard"
                 >
@@ -280,7 +223,10 @@ const AudioTranscription = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={clearTranscript}
+                  onClick={() => {
+                    setAudioState(prev => ({ ...prev, transcript: '', error: '' }))
+                    toast.success('Transcript cleared')
+                  }}
                   title="Clear transcript"
                   aria-label="Clear transcript"
                 >
