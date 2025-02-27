@@ -99,7 +99,7 @@ const AudioTranscription = ({ audioState, setAudioState, providers }: AudioTrans
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Audio Transcription</CardTitle>
+          <CardTitle>Generate Transcript from Audio URLs</CardTitle>
         </CardHeader>
         <CardContent>
           <form

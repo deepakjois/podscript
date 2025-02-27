@@ -184,7 +184,7 @@ const YouTubeTranscription = ({
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Generate Transcripts from YouTube Videos</CardTitle>
+          <CardTitle>Generate Transcript from YouTube Videos</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleTranscribe} className="space-y-4">
