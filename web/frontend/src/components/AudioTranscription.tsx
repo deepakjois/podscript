@@ -32,7 +32,8 @@ export interface AudioTranscriptionProps {
   setAudioState: React.Dispatch<React.SetStateAction<AudioTranscriptionState>>
   providers: { value: string; label: string }[]
   audioModels: { value: string; label: string }[]
-  onProviderChange: (provider: string) => void
+  audioModelsMap: Record<string, { value: string; label: string }[]>
+  setCurrentAudioModels: React.Dispatch<React.SetStateAction<{ value: string; label: string }[]>>
 }
 
 // Define response types for better type safety
@@ -46,7 +47,8 @@ const AudioTranscription = ({
   setAudioState,
   providers,
   audioModels,
-  onProviderChange,
+  audioModelsMap,
+  setCurrentAudioModels,
 }: AudioTranscriptionProps) => {
   // Handle URL input changes
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,10 +58,24 @@ const AudioTranscription = ({
     }))
   }
 
-  // Handle provider selection changes
-  const handleProviderChange = (value: string) => {
-    // Call the parent component's handler to fetch models for the new provider
-    onProviderChange(value)
+  // Handle provider selection changes - moved from parent component
+  const handleProviderChange = (provider: string) => {
+    // Update current audio models from the map
+    const models = audioModelsMap[provider] || []
+
+    // Always select the first model if available
+    const firstModel = models.length > 0 ? models[0].value : ''
+
+    // Important: Update both states in a specific order to ensure synchronization
+    // First update the models list
+    setCurrentAudioModels(models)
+
+    // Then update the source and model in a single state update
+    setAudioState(prev => ({
+      ...prev,
+      source: provider,
+      model: firstModel,
+    }))
   }
 
   // Handle model selection changes
@@ -154,42 +170,6 @@ const AudioTranscription = ({
         <CardContent>
           <form onSubmit={handleTranscribe} className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="provider-select" className="text-sm font-medium">
-                Speech-to-Text Provider
-              </label>
-              <Select value={audioState.source} onValueChange={handleProviderChange}>
-                <SelectTrigger id="provider-select">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {providers.map(provider => (
-                    <SelectItem key={provider.value} value={provider.value}>
-                      {provider.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="model-select" className="text-sm font-medium">
-                Model
-              </label>
-              <Select value={audioState.model} onValueChange={handleModelChange}>
-                <SelectTrigger id="model-select">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {audioModels.map(model => (
-                    <SelectItem key={model.value} value={model.value}>
-                      {model.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
               <label htmlFor="audio-url" className="text-sm font-medium">
                 Audio URL
               </label>
@@ -215,6 +195,44 @@ const AudioTranscription = ({
                   </a>
                 </p>
               </div>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="provider-select" className="text-sm font-medium">
+                Speech-to-Text (STT) Provider
+              </label>
+              <Select value={audioState.source} onValueChange={handleProviderChange}>
+                <SelectTrigger id="provider-select">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {providers.map(provider => (
+                    <SelectItem key={provider.value} value={provider.value}>
+                      {provider.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="model-select" className="text-sm font-medium">
+                Model
+              </label>
+              <Select
+                value={audioState.model || (audioModels.length > 0 ? audioModels[0].value : '')}
+                onValueChange={handleModelChange}
+              >
+                <SelectTrigger id="model-select">
+                  <SelectValue placeholder="Select a model" />
+                </SelectTrigger>
+                <SelectContent>
+                  {audioModels.map(model => (
+                    <SelectItem key={model.value} value={model.value}>
+                      {model.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </form>
         </CardContent>

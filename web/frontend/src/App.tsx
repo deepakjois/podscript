@@ -164,23 +164,6 @@ const App = () => {
       })
   }, [])
 
-  // Handle audio provider change
-  const handleAudioProviderChange = (provider: string) => {
-    // Update current audio models from the map
-    const models = audioModelsMap[provider] || []
-    setCurrentAudioModels(models)
-
-    // Always select the first model if available
-    const firstModel = models.length > 0 ? models[0].value : ''
-
-    // Update the source and model in the state
-    setAudioState(prev => ({
-      ...prev,
-      source: provider,
-      model: firstModel,
-    }))
-  }
-
   // Update theme when it changes
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
@@ -269,16 +252,11 @@ const App = () => {
         <Tabs
           defaultValue="youtube"
           className="w-full"
-          onValueChange={value => {
-            // Prevent tab switching if transcription is in progress
-            if (youtubeState.isTranscribing && value === 'audio') {
-              toast.error('Please cancel the active YouTube transcription before switching tabs')
-              return false
-            }
-
-            if (audioState.isTranscribing && value === 'youtube') {
+          onValueChange={() => {
+            // Prevent tab switching if any transcription is in progress
+            if (youtubeState.isTranscribing || audioState.isTranscribing) {
               toast.error(
-                'Please wait for the audio transcription to complete before switching tabs',
+                'Please wait for the active transcription to complete before switching tabs',
               )
               return false
             }
@@ -317,7 +295,8 @@ const App = () => {
               setAudioState={setAudioState}
               providers={STT_PROVIDERS}
               audioModels={currentAudioModels}
-              onProviderChange={handleAudioProviderChange}
+              audioModelsMap={audioModelsMap}
+              setCurrentAudioModels={setCurrentAudioModels}
             />
           </TabsContent>
         </Tabs>
