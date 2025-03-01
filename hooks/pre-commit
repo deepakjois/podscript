@@ -6,12 +6,21 @@ if git diff --cached --quiet web/frontend/; then
     exit 0
 fi
 
-echo "Frontend changes detected. Building and copying dist..."
+echo "Frontend changes detected. Running lint checks..."
 
 CURRENT_DIR=$(pwd)
 
-# Navigate to frontend dir and run build
+# Navigate to frontend dir and run lint
 cd web/frontend
+if ! npm run lint; then
+    echo "❌ Frontend lint check failed. Please fix the errors before committing."
+    cd "$CURRENT_DIR"
+    exit 1
+fi
+
+echo "✅ Frontend lint check passed. Building and copying dist..."
+
+# Run build
 npm run build
 
 cd "$CURRENT_DIR"
@@ -19,4 +28,5 @@ cd "$CURRENT_DIR"
 # Stage the new dist files that were outputted by vite
 git add dist/
 
+echo "All frontend checks passed and dist files updated!"
 exit 0

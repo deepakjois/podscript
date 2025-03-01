@@ -7,14 +7,35 @@ import tseslint from 'typescript-eslint'
 import prettier from 'eslint-plugin-prettier'
 
 export default tseslint.config(
-  { ignores: ['dist', 'src/components/ui/**'] },
+  { ignores: ['dist', 'src/components/ui/**', 'eslint.config.js'] },
+  // Base configuration for all files
   {
-    extends: [
-      js.configs.recommended,
-      ...tseslint.configs.recommendedTypeChecked,
-      ...tseslint.configs.stylisticTypeChecked,
-    ],
+    files: ['**/*.{js,jsx,ts,tsx}'],
+    extends: [js.configs.recommended],
+    plugins: {
+      react,
+      prettier,
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
+    },
+    settings: {
+      react: {
+        version: '18.3',
+      },
+    },
+    rules: {
+      'no-unused-vars': 'error',
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      ...reactHooks.configs.recommended.rules,
+      ...react.configs.recommended.rules,
+      ...react.configs['jsx-runtime'].rules,
+      ...prettier.configs.recommended.rules,
+    },
+  },
+  // TypeScript-specific configuration
+  {
     files: ['**/*.{ts,tsx}'],
+    extends: [...tseslint.configs.recommendedTypeChecked, ...tseslint.configs.stylisticTypeChecked],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
@@ -22,20 +43,6 @@ export default tseslint.config(
         project: ['./tsconfig.node.json', './tsconfig.app.json'],
         tsconfigRootDir: import.meta.dirname,
       },
-    },
-    settings: { react: { version: '18.3' } },
-    plugins: {
-      react,
-      prettier,
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
-    },
-    rules: {
-      ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
-      ...react.configs.recommended.rules,
-      ...react.configs['jsx-runtime'].rules,
-      ...prettier.configs.recommended.rules,
     },
   },
 )
