@@ -7,7 +7,7 @@ toolchain go1.22.12
 require (
 	github.com/AssemblyAI/assemblyai-go-sdk v1.10.0
 	github.com/alecthomas/kong v1.6.1
-	github.com/anthropics/anthropic-sdk-go v0.2.0-alpha.8
+	github.com/anthropics/anthropic-sdk-go v0.2.0-beta.3
 	github.com/aws/aws-sdk-go-v2 v1.36.3
 	github.com/aws/aws-sdk-go-v2/config v1.29.13
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.66
