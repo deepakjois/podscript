@@ -2,7 +2,7 @@ module github.com/deepakjois/podscript
 
 go 1.22.7
 
-toolchain go1.22.12
+toolchain go1.24.2
 
 require (
 	github.com/AssemblyAI/assemblyai-go-sdk v1.10.0
