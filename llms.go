@@ -107,7 +107,7 @@ func NewLLMClient(provider LLMProvider, config Config) (LLMClient, error) {
 }
 
 type OpenAIClient struct {
-	client *openai.Client
+	client openai.Client
 }
 
 func NewOpenAIClient(apiKey string) *OpenAIClient {
@@ -120,11 +120,11 @@ func (c *OpenAIClient) Complete(ctx context.Context, req CompletionRequest) (*Co
 	resp, err := c.client.Chat.Completions.New(
 		ctx,
 		openai.ChatCompletionNewParams{
-			Model: openai.F(string(req.Model)),
-			Messages: openai.F([]openai.ChatCompletionMessageParamUnion{
+			Model: openai.ChatModel(string(req.Model)),
+			Messages: []openai.ChatCompletionMessageParamUnion{
 				openai.SystemMessage(req.SystemPrompt),
 				openai.UserMessage(req.UserPrompt),
-			}),
+			},
 		},
 	)
 
@@ -149,11 +149,11 @@ func (c *OpenAIClient) CompleteStream(ctx context.Context, req CompletionRequest
 		stream := c.client.Chat.Completions.NewStreaming(
 			ctx,
 			openai.ChatCompletionNewParams{
-				Model: openai.F(string(req.Model)),
-				Messages: openai.F([]openai.ChatCompletionMessageParamUnion{
+				Model: openai.ChatModel(string(req.Model)),
+				Messages: []openai.ChatCompletionMessageParamUnion{
 					openai.SystemMessage(req.SystemPrompt),
 					openai.UserMessage(req.UserPrompt),
-				}),
+				},
 			},
 		)
 
@@ -265,7 +265,7 @@ func (c *GeminiClient) CompleteStream(ctx context.Context, req CompletionRequest
 }
 
 type ClaudeClient struct {
-	client *anthropic.Client
+	client anthropic.Client
 }
 
 func NewClaudeClient(apiKey string) *ClaudeClient {
@@ -276,17 +276,17 @@ func NewClaudeClient(apiKey string) *ClaudeClient {
 
 func (c *ClaudeClient) Complete(ctx context.Context, req CompletionRequest) (*CompletionResponse, error) {
 	params := anthropic.MessageNewParams{
-		Model:     anthropic.F(string(req.Model)),
-		MaxTokens: anthropic.F(int64(modelTokenLimits[req.Model])),
-		Messages: anthropic.F([]anthropic.MessageParam{
+		Model:     anthropic.Model(string(req.Model)),
+		MaxTokens: int64(modelTokenLimits[req.Model]),
+		Messages: []anthropic.MessageParam{
 			anthropic.NewUserMessage(anthropic.NewTextBlock(req.UserPrompt)),
-		}),
+		},
 	}
 
 	if req.SystemPrompt != "" {
-		params.System = anthropic.F([]anthropic.TextBlockParam{
-			anthropic.NewTextBlock(req.SystemPrompt),
-		})
+		params.System = []anthropic.TextBlockParam{
+			{Text: req.SystemPrompt},
+		}
 	}
 
 	resp, err := c.client.Messages.New(ctx, params)
@@ -309,17 +309,17 @@ func (c *ClaudeClient) CompleteStream(ctx context.Context, req CompletionRequest
 		defer close(errChan)
 
 		params := anthropic.MessageNewParams{
-			Model:     anthropic.F(string(req.Model)),
-			MaxTokens: anthropic.F(int64(modelTokenLimits[req.Model])),
-			Messages: anthropic.F([]anthropic.MessageParam{
+			Model:     anthropic.Model(string(req.Model)),
+			MaxTokens: int64(modelTokenLimits[req.Model]),
+			Messages: []anthropic.MessageParam{
 				anthropic.NewUserMessage(anthropic.NewTextBlock(req.UserPrompt)),
-			}),
+			},
 		}
 
 		if req.SystemPrompt != "" {
-			params.System = anthropic.F([]anthropic.TextBlockParam{
-				anthropic.NewTextBlock(req.SystemPrompt),
-			})
+			params.System = []anthropic.TextBlockParam{
+				{Text: req.SystemPrompt},
+			}
 		}
 
 		stream := c.client.Messages.NewStreaming(ctx, params)
@@ -328,14 +328,11 @@ func (c *ClaudeClient) CompleteStream(ctx context.Context, req CompletionRequest
 			event := stream.Current()
 			message.Accumulate(event)
 
-			switch delta := event.Delta.(type) {
-			case anthropic.ContentBlockDeltaEventDelta:
-				if delta.Text != "" {
-					chunkChan <- CompletionChunk{
-						Text:     delta.Text,
-						Provider: Claude,
-						Done:     false,
-					}
+			if event.Delta.Type == "content_block_delta" && event.Delta.Text != "" {
+				chunkChan <- CompletionChunk{
+					Text:     event.Delta.Text,
+					Provider: Claude,
+					Done:     false,
 				}
 			}
 		}
