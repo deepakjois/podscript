@@ -46,7 +46,7 @@
     "vite": "^6.0.5"
   },
   "dependencies": {
-    "@hookform/resolvers": "^4.1.2",
+    "@hookform/resolvers": "^5.0.0",
     "@radix-ui/react-accordion": "^1.2.3",
     "sonner": "^2.0.1",
     "zod": "^3.24.2"
