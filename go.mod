@@ -18,8 +18,7 @@ require (
 	github.com/deepgram/deepgram-go-sdk v1.9.0
 	github.com/google/generative-ai-go v0.19.0
 	github.com/openai/openai-go v0.1.0-beta.10
-	github.com/pelletier/go-toml/v2 v2.2.4
-	github.com/pelletier/go-toml/v2 v2.2.4
+	github.com/pelletier/go-toml v1.9.5
 	google.golang.org/api v0.231.0
 )
 
@@ -89,9 +88,7 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.0 // indirect
 	github.com/charmbracelet/x/ansi v0.8.0 // indirect
 	github.com/charmbracelet/x/exp/strings v0.0.0-20240722160745-212f7b056ed0 // indirect
-	github.com/charmbracelet/x/input v0.1.1 // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
-	github.com/charmbracelet/x/windows v0.1.2 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
