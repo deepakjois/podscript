@@ -10,19 +10,20 @@ import (
 	"strings"
 
 	"github.com/alecthomas/kong"
-	"github.com/pelletier/go-toml"
+	"github.com/pelletier/go-toml/v2"
 )
 
 func ConfLoader(r io.Reader) (kong.Resolver, error) {
-	tree, err := toml.LoadReader(r)
-	if err != nil {
+	var tree map[string]any
+	decoder := toml.NewDecoder(r)
+	if err := decoder.Decode(&tree); err != nil {
 		return nil, err
 	}
 	var filename string
 	if named, ok := r.(interface{ Name() string }); ok {
 		filename = named.Name()
 	}
-	return &ConfResolver{filename: filename, tree: tree.ToMap()}, nil
+	return &ConfResolver{filename: filename, tree: tree}, nil
 }
 
 type ConfResolver struct {
