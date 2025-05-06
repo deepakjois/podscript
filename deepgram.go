@@ -8,10 +8,10 @@ import (
 	"io/fs"
 	"os"
 
-	api "github.com/deepgram/deepgram-go-sdk/pkg/api/listen/v1/rest"
-	interfacesv1 "github.com/deepgram/deepgram-go-sdk/pkg/api/listen/v1/rest/interfaces"
-	interfaces "github.com/deepgram/deepgram-go-sdk/pkg/client/interfaces"
-	client "github.com/deepgram/deepgram-go-sdk/pkg/client/listen"
+	restapi "github.com/deepgram/deepgram-go-sdk/v2/pkg/api/listen/v1/rest"
+	apiinterfaces "github.com/deepgram/deepgram-go-sdk/v2/pkg/api/listen/v1/rest/interfaces"
+	clientinterfaces "github.com/deepgram/deepgram-go-sdk/v2/pkg/client/interfaces/v1"
+	client "github.com/deepgram/deepgram-go-sdk/v2/pkg/client/listen/v1/rest"
 )
 
 type DeepgramCmd struct {
@@ -32,10 +32,9 @@ func (d *DeepgramCmd) Run() error {
 		return errors.New("please provide either a valid URL or a file path")
 	}
 
-	client.InitWithDefault()
 	ctx := context.Background()
 
-	options := &interfaces.PreRecordedTranscriptionOptions{
+	options := &clientinterfaces.PreRecordedTranscriptionOptions{
 		Model:       d.Model,
 		SmartFormat: true,
 		Punctuate:   true,
@@ -43,11 +42,11 @@ func (d *DeepgramCmd) Run() error {
 		Utterances:  true,
 	}
 
-	c := client.NewREST(d.APIKey, &interfaces.ClientOptions{})
-	dg := api.New(c)
+	c := client.New(d.APIKey, &clientinterfaces.ClientOptions{})
+	dg := restapi.New(c)
 
 	var (
-		res *interfacesv1.PreRecordedResponse
+		res *apiinterfaces.PreRecordedResponse
 		err error
 	)
 

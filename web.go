@@ -10,9 +10,9 @@ import (
 
 	aai "github.com/AssemblyAI/assemblyai-go-sdk"
 
-	api "github.com/deepgram/deepgram-go-sdk/pkg/api/listen/v1/rest"
-	interfaces "github.com/deepgram/deepgram-go-sdk/pkg/client/interfaces"
-	client "github.com/deepgram/deepgram-go-sdk/pkg/client/listen"
+	restapi "github.com/deepgram/deepgram-go-sdk/v2/pkg/api/listen/v1/rest"
+	clientinterfaces "github.com/deepgram/deepgram-go-sdk/v2/pkg/client/interfaces/v1"
+	client "github.com/deepgram/deepgram-go-sdk/v2/pkg/client/listen/v1/rest"
 )
 
 //go:embed dist
@@ -155,10 +155,10 @@ func handleAudioTranscription(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		c := client.NewREST(config.DeepgramAPIKey, &interfaces.ClientOptions{})
-		dg := api.New(c)
+		c := client.New(config.DeepgramAPIKey, &clientinterfaces.ClientOptions{})
+		dg := restapi.New(c)
 
-		options := &interfaces.PreRecordedTranscriptionOptions{
+		options := &clientinterfaces.PreRecordedTranscriptionOptions{
 			Model:       req.Model,
 			SmartFormat: true,
 			Punctuate:   true,

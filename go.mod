@@ -15,7 +15,6 @@ require (
 	github.com/charmbracelet/huh v0.7.0
 	github.com/deepakjois/groq v0.0.0-20250118174530-0262c383bbb6
 	github.com/deepakjois/ytt v0.0.0-20240922124700-664221d83d24
-	github.com/deepgram/deepgram-go-sdk v1.9.0
 	github.com/deepgram/deepgram-go-sdk/v2 v2.0.0
 	github.com/google/generative-ai-go v0.20.1
 	github.com/openai/openai-go v0.1.0-beta.10
@@ -46,15 +45,12 @@ require (
 	github.com/coder/websocket v1.8.12 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dvonthenen/websocket v1.5.1-dyv.2 // indirect
-	github.com/fatih/color v1.17.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
 	github.com/googleapis/gax-go/v2 v2.14.1 // indirect
-	github.com/hokaccha/go-prettyjson v0.0.0-20211117102719-0474bc63780f // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/tidwall/gjson v1.14.4 // indirect
