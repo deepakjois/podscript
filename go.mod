@@ -15,7 +15,7 @@ require (
 	github.com/charmbracelet/huh v0.7.0
 	github.com/deepakjois/groq v0.0.0-20250118174530-0262c383bbb6
 	github.com/deepakjois/ytt v0.0.0-20240922124700-664221d83d24
-	github.com/deepgram/deepgram-go-sdk/v2 v2.0.0
+	github.com/deepgram/deepgram-go-sdk/v2 v2.1.0
 	github.com/google/generative-ai-go v0.20.1
 	github.com/openai/openai-go v0.1.0-beta.10
 	github.com/pelletier/go-toml/v2 v2.2.4
