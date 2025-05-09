@@ -102,6 +102,8 @@ github.com/deepakjois/ytt v0.0.0-20240922124700-664221d83d24 h1:KN6xw3A5yUnW1vlZ
 github.com/deepakjois/ytt v0.0.0-20240922124700-664221d83d24/go.mod h1:10sJT4UpmA1U9aeWkgHpFDAHxmIrN3kShFq9U6cEelo=
 github.com/deepgram/deepgram-go-sdk/v2 v2.0.0 h1:rUwXkNU9PoXYkf3iPM3lYP/B9V+pCZaQlvryCLMCZ4E=
 github.com/deepgram/deepgram-go-sdk/v2 v2.0.0/go.mod h1:KZpM7mSAZj9CsyDsppA4l/b7rzt+IE3Ya6BcAcdTTxI=
+github.com/deepgram/deepgram-go-sdk/v2 v2.1.0 h1:BmO+h3mJ/WUnJ+vJzcI7FQH2b0+68RdpJkfWZ/SqX10=
+github.com/deepgram/deepgram-go-sdk/v2 v2.1.0/go.mod h1:KZpM7mSAZj9CsyDsppA4l/b7rzt+IE3Ya6BcAcdTTxI=
 github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkpeCY=
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/dvonthenen/websocket v1.5.1-dyv.2 h1:OXlWJJkeHt8k4+MEI0Y8SQjY2ihHYD2z/tI7sZZfsnA=
